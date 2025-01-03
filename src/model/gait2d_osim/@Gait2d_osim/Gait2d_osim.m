@@ -172,7 +172,13 @@ classdef Gait2d_osim < Model
         %> @retval	dfdu	(optional) Double matrix: Transpose of Jacobian matrix df/du 		(Gait2d_osim.nControls x Gait2d_osim.nConstraints)
         %======================================================================
         function [f, dfdx, dfdxdot, dfdu] = getDynamics(obj,x,xdot,u)
-
+          %  stack = dbstack('-completenames');
+           % if numel(stack) >= 2
+            %    fprintf('Caller is %s line %d in file %s.\n', stack(2).name, stack(2).line, stack(2).file)
+           % else
+           %     fprintf('No caller.\n')
+           % end
+           
             % Get neural excitation
             idxu = obj.extractControl('u');
             umus = u(idxu);
@@ -182,6 +188,7 @@ classdef Gait2d_osim < Model
             idxTorque = obj.extractControl('torque');
             Mextra(obj.hidxTorqueDof) = obj.mExtraScaleFactor * u(idxTorque); % Scale them by obj.mExtraScaleFactor and assume that order is consistent.
 
+         
             % Apply treadmill speed
             xdot(obj.idxcxCPleft) = xdot(obj.idxcxCPleft) + obj.speed_left;
             xdot(obj.idxcxCPright) = xdot(obj.idxcxCPright) + obj.speed_right;

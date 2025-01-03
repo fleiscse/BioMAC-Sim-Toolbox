@@ -16,7 +16,19 @@
 %======================================================================
 classdef Gait2d_osim_tread < Gait2d_osim
 
-  
+    properties (SetAccess = protected)
+        %> Struct: Information (name, file, modified, sha256) on opensim model
+       grf_delay = 6
+       
+       Kfy = -0.1828
+       Kgrf = 1.65468
+
+       Kp = 3.01258
+       Kd = 0.00812
+       Kpd = 0.432449
+
+       c = 0.01
+    end
   
   
 
@@ -92,6 +104,8 @@ classdef Gait2d_osim_tread < Gait2d_osim
         end
 
     end
+
+  
 
 end
 

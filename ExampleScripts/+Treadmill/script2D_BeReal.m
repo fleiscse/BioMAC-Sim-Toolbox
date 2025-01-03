@@ -85,7 +85,7 @@ trackingData = TrackingData.loadStruct(dataFile);
 targetSpeed = 0; % m/s
 
 % Create and initialize an instance of the OpenSim 2D model class.
-model = Gait2d_osim(modelFile);
+model = Gait2d_osim_tread(modelFile);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
     model.setTreadmillSpeed(1.2);

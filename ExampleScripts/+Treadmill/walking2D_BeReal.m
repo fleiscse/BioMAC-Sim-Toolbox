@@ -24,7 +24,7 @@ function problem = walking2D_BeReal(model, resultfile, trackingData, targetSpeed
 
 %% Fixed settings
 % We can choose the number of collocation nodes.
-nNodes = 40;   
+nNodes = 100;   
 % Most of the time we use backard euler for discretization which is encoded with 'BE'.
 Euler = 'BE';
 % We usually use the name of the resultfile for the name of the logfile
@@ -50,8 +50,8 @@ xmin(model.extractState('q', 'pelvis_tx'), 1) = 0;
 problem.addOptimVar('states', xmin, xmax);
 
 % Add the treadmill speed as optimization variable (initial values will be specified later)
-problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, dont add extra node
-problem.addOptimVar('belt_right', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, dont add extra node
+problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node,  add extra node
+problem.addOptimVar('belt_right', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, add extra node
 
 
 % Add controls to the problem using the default bounds (initial values will be specified later)
@@ -93,8 +93,13 @@ problem.addObjective(@regTerm, Wreg);
 
 
 %% Add constraints to the problem
+
 problem.addConstraint(@dynamicConstraints,repmat(model.constraints.fmin,1,nNodes),repmat(model.constraints.fmax,1,nNodes))
 problem.addConstraint(@periodicityConstraint,zeros(model.nStates+model.nControls,1),zeros(model.nStates+model.nControls,1),isSymmetric)
+%problem.addConstraint(@treadSpeedPeriodicityConstraint,zeros(3,1),zeros(3,1),isSymmetric)
+problem.addConstraint(@treadmillSpeedConstraints,repmat([0;0],1,nNodes),repmat([0;0],1,nNodes))
+problem.derivativetest()
+fprintf('passed test')
 
 
 end
