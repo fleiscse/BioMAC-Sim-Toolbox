@@ -20,12 +20,12 @@ classdef Gait2d_osim_tread < Gait2d_osim
         %> Struct: Information (name, file, modified, sha256) on opensim model
        grf_delay = 6
        
-       Kfy = -0.1828
-       Kgrf = 1.65468
+       Kfy = -0.2000
+       Kgrf = 5.5687e-6
 
-       Kp = 3.01258
-       Kd = 0.00812
-       Kpd = 0.432449
+       Kp = 4.25
+       Kd = -0.03164
+       Kpd = 0.2275
 
        c = 0.01
     end
