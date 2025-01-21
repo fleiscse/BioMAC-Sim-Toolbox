@@ -67,13 +67,17 @@ if strcmp(option,'confun')
         v_left_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
         v_right_curr = X(obj.idx.belt_right(iNode));
         v_right_prev = X(obj.idx.belt_right(mod(iNode - 2, nNodesDur-1)+1));
+        
 
         v_left = v_left_curr + Kgrf *((lfx2 - lfx1)/c) + Kgrf*Kfy*((lfy2 - lfy1)/c) + Kpd*Kp*(obj.model.speed_left - v_left_curr) + Kpd*Kd * ((-v_left_curr+ v_left_prev)/c);
         v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(obj.model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
-
-
         
-        output(ic) = [v_left;v_right];	% backward Euler discretization
+        v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
+        v_right_next = X(obj.idx.belt_right(mod(iNode, nNodesDur - 1) + 1));
+        
+        diff =  v_left- v_left_next ;
+        diff2 = v_right - v_right_next ;
+        output(ic) = [diff;diff2];	% backward Euler discretization
         
         end
     
@@ -115,7 +119,7 @@ elseif strcmp(option,'jacobian')
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode;
         delayed_index = mod(iNode - delay-1, nNodesDur-1) +1; %starts at 95 if we have 100 nodes or 96 if we have 101 nodes, gets NEGATIVE derivative
         delayed_index2 = mod(iNode - delay, nNodesDur-1) +1; %starts at 96 (for 100 nodes), is gets POSITIVE derivative
-
+        next_index =  mod(iNode, nNodesDur - 1) + 1;
         %derivative of left belt wrt left GRFx (at states heel and toe)
         output(ic(1), idxFxToeLinX(delayed_index2)) = Kgrf/c;
         output(ic(1), idxFxHeelLinX(delayed_index2)) = Kgrf / c;
@@ -128,6 +132,10 @@ elseif strcmp(option,'jacobian')
         output(ic(1), idxFyHeelLinX(delayed_index2)) = Kfy * Kgrf / c;
         output(ic(1), idxFyToeLinX(delayed_index)) = -Kgrf* Kfy/c;
         output(ic(1), idxFyHeelLinX(delayed_index)) = -Kgrf*Kfy /c;
+
+        %derivative wrt to next speed
+        
+        output(ic(1), idxVLeft(next_index)) = -1;
 
 
         %derivative of right belt wrt right GRFx (at states heel and toe)
@@ -169,6 +177,9 @@ elseif strcmp(option,'jacobian')
 
         output(ic(2), idxVRight(iNode)) = 1 -Kpd*Kp - Kpd*Kd/c; % der from pd Part wrt v(n)
         output(ic(2), idxVRight(mod(iNode - 2, nNodesDur-1)+1)) =  Kpd*Kd/c; %derivative wrt v(n-1)
+
+        %derivative of left belt wrt previous speed
+        output(ic(2), idxVRight(next_index)) = -1;
         
     end
 else
