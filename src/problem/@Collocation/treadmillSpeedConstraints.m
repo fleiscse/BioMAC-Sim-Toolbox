@@ -30,6 +30,7 @@ nNodesDur = obj.nNodesDur; %number of collocation nodes + 1
 
 nconstraintspernode = 2; %one for left and one for right
 
+m = -obj.model.bodymass * obj.model.gravity(2);
 delay = obj.model.grf_delay;
 Kfy =  obj.model.Kfy;
 Kgrf = obj.model.Kgrf;
@@ -53,15 +54,15 @@ if strcmp(option,'confun')
         grfDelayedIx = obj.model.getGRF(delayedIx);
         grfDelayedIx2 = obj.model.getGRF(delayedIx2);
 
-        rfx2 = grfDelayedIx2(1); %TODO: check if this is the same as when I add the 2 states
-        rfy2 = grfDelayedIx2(2);
-        lfx2 = grfDelayedIx2(7);
-        lfy2 = grfDelayedIx2(8);
+        rfx2 = grfDelayedIx2(1)*m; %TODO: check if this is the same as when I add the 2 states
+        rfy2 = grfDelayedIx2(2)*m;
+        lfx2 = grfDelayedIx2(7)*m;
+        lfy2 = grfDelayedIx2(8)*m;
 
-        rfx1 = grfDelayedIx(1);
-        rfy1 = grfDelayedIx(2);
-        lfx1 = grfDelayedIx(7);
-        lfy1 = grfDelayedIx(8);
+        rfx1 = grfDelayedIx(1)*m;
+        rfy1 = grfDelayedIx(2)*m;
+        lfx1 = grfDelayedIx(7)*m;
+        lfy1 = grfDelayedIx(8)*m;
       
         v_left_curr = X(obj.idx.belt_left(iNode));
         v_left_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
@@ -121,17 +122,17 @@ elseif strcmp(option,'jacobian')
         delayed_index2 = mod(iNode - delay, nNodesDur-1) +1; %starts at 96 (for 100 nodes), is gets POSITIVE derivative
         next_index =  mod(iNode, nNodesDur - 1) + 1;
         %derivative of left belt wrt left GRFx (at states heel and toe)
-        output(ic(1), idxFxToeLinX(delayed_index2)) = Kgrf/c;
-        output(ic(1), idxFxHeelLinX(delayed_index2)) = Kgrf / c;
-        output(ic(1), idxFxToeLinX(delayed_index)) = -Kgrf/c;
-        output(ic(1), idxFxHeelLinX(delayed_index)) = -Kgrf / c;
+        output(ic(1), idxFxToeLinX(delayed_index2)) = m*Kgrf/c;
+        output(ic(1), idxFxHeelLinX(delayed_index2)) = m*Kgrf / c;
+        output(ic(1), idxFxToeLinX(delayed_index)) = -m*Kgrf/c;
+        output(ic(1), idxFxHeelLinX(delayed_index)) = -m*Kgrf / c;
 
 
         %derivative of left belt wrt left GRFy (at states heel and toe)
-        output(ic(1), idxFyToeLinX(delayed_index2)) = Kfy * Kgrf/c;
-        output(ic(1), idxFyHeelLinX(delayed_index2)) = Kfy * Kgrf / c;
-        output(ic(1), idxFyToeLinX(delayed_index)) = -Kgrf* Kfy/c;
-        output(ic(1), idxFyHeelLinX(delayed_index)) = -Kgrf*Kfy /c;
+        output(ic(1), idxFyToeLinX(delayed_index2)) = Kfy * m*Kgrf/c;
+        output(ic(1), idxFyHeelLinX(delayed_index2)) = Kfy * m*Kgrf / c;
+        output(ic(1), idxFyToeLinX(delayed_index)) = -m*Kgrf* Kfy/c;
+        output(ic(1), idxFyHeelLinX(delayed_index)) = -m*Kgrf*Kfy /c;
 
         %derivative wrt to next speed
         
@@ -139,16 +140,16 @@ elseif strcmp(option,'jacobian')
 
 
         %derivative of right belt wrt right GRFx (at states heel and toe)
-        output(ic(2), idxFxToeRinX(delayed_index2)) = Kgrf/c;
-        output(ic(2), idxFxHeelRinX(delayed_index2)) = Kgrf / c;
-        output(ic(2), idxFxToeRinX(delayed_index)) = -Kgrf/c;
-        output(ic(2), idxFxHeelRinX(delayed_index)) = -Kgrf / c;
+        output(ic(2), idxFxToeRinX(delayed_index2)) = m*Kgrf/c;
+        output(ic(2), idxFxHeelRinX(delayed_index2)) = m*Kgrf / c;
+        output(ic(2), idxFxToeRinX(delayed_index)) = -m*Kgrf/c;
+        output(ic(2), idxFxHeelRinX(delayed_index)) = -m*Kgrf / c;
 
         %derivative of right belt wrt right GRFy (at states heel and toe)
-        output(ic(2), idxFyToeRinX(delayed_index2)) = Kfy * Kgrf/c;
-        output(ic(2), idxFyHeelRinX(delayed_index2)) = Kfy * Kgrf / c;
-        output(ic(2), idxFyToeRinX(delayed_index)) = -Kgrf* Kfy/c;
-        output(ic(2), idxFyHeelRinX(delayed_index)) = -Kgrf*Kfy /c;
+        output(ic(2), idxFyToeRinX(delayed_index2)) = Kfy * m*Kgrf/c;
+        output(ic(2), idxFyHeelRinX(delayed_index2)) = Kfy * m*Kgrf / c;
+        output(ic(2), idxFyToeRinX(delayed_index)) = -m*Kgrf* Kfy/c;
+        output(ic(2), idxFyHeelRinX(delayed_index)) = -m*Kgrf*Kfy /c;
 
 %         if delayed_index2==1 %then it is also a function of the extra node
 %             output(ic(1), idxFxToeLinX(delayed_index2+nNodesDur-1)) = -Kgrf/c;
