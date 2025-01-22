@@ -63,6 +63,22 @@ if strcmp(option,'confun')
         rfy1 = grfDelayedIx(2)*m;
         lfx1 = grfDelayedIx(7)*m;
         lfy1 = grfDelayedIx(8)*m;
+
+        % Place variables in a numeric array
+%         variables = [rfx2, rfy2, lfx2, lfy2, rfx1, rfy1, lfx1, lfy1];
+% 
+% % Apply condition to set values to 0 if abs(value) < 10
+%         variables(abs(variables) < 5) = 0;
+% 
+% % Reassign values back to the individual variables
+%         rfx2 = variables(1);
+%         rfy2 = variables(2);
+%         lfx2 = variables(3);
+%         lfy2 = variables(4);
+%         rfx1 = variables(5);
+%         rfy1 = variables(6);
+%         lfx1 = variables(7);
+%         lfy1 = variables(8);
       
         v_left_curr = X(obj.idx.belt_left(iNode));
         v_left_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
