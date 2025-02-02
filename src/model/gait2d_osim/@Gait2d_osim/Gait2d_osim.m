@@ -93,9 +93,12 @@ classdef Gait2d_osim < Model
             % Set listeners
             obj.add_listeners();
             % Add scaling:
+            if nargin ==1
+                bodymass=90;
+            end
             if nargin > 1
                 if nargin < 3 
-                    bodymass = 72.6;
+                    bodymass = 90;
                 end
                 % Scaling writes to a _tmp opensimfile, therefore
                 [opensimfile, obj.hash] = Gait2d_osim.scaleOsim(opensimfile, scale_factors, bodymass, varargin{:});  

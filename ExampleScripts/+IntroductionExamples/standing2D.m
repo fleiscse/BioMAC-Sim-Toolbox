@@ -63,6 +63,7 @@ problem.addOptimVar('states', xmin, xmax, xinit);
 problem.addOptimVar('controls', model.controls.xmin, model.controls.xmax, model.controls.xneutral); 
 
 
+
 %% Add objective term(s) to the problem
 % For this simulation, we want to minimize muscle effort but we do not want
 % to track data. Because of that, we have only one objective term meaning that we do

@@ -17,6 +17,7 @@
 %>                      the model and speed and duration of the periodic movement
 %======================================================================
 function output = dynamicConstraints(obj,option,X)
+
 %% check input parameter
 if ~isfield(obj.idx,'states') || ~isfield(obj.idx,'controls') || ~isfield(obj.idx,'dur') % check whether controls are stored in X
     error('Model states and controls and duration need to be stored in state vector X.')
@@ -47,14 +48,24 @@ if strcmp(option,'confun')
     
     % dynamic equations must be zero
     for iNode=1:(nNodesDur-1)
+        
+
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode; %indices of constraints of iNode in c
         x1 = X(obj.idx.states(:,iNode));
         x2 = X(obj.idx.states(:,iNode+1));
         xd =(x2-x1)/h;
         u2 = X(obj.idx.controls(:,iNode+1));
-        
+        if iNode == nNodesDur-1
+            vBeltLeft = X(obj.idx.belt_left(1));
+            vBeltRight = X(obj.idx.belt_right(1));
+        else
+
+            vBeltLeft = X(obj.idx.belt_left(iNode+1)); %or at this node??
+            vBeltRight = X(obj.idx.belt_right(iNode+1));
+        end
+
         if strcmp(obj.Euler,'BE')
-            output(ic) = obj.model.getDynamics(x2,xd,u2);	% backward Euler discretization
+            output(ic) = obj.model.getDynamics(x2,xd,u2,vBeltLeft, vBeltRight);	% backward Euler discretization
         elseif strcmp(obj.Euler,'ME')
             % we're using u2 instead of (u1+u2)/2 because u is
             % open loop and it makes no difference except u2
@@ -80,9 +91,21 @@ elseif strcmp(option,'jacobian')
         x2 = X(ix2);
         xd =(x2-x1)/h;
         u2 = X(obj.idx.controls(:,iNode+1));
+    
+        if iNode == nNodesDur-1
+            vBeltLeft = X(obj.idx.belt_left(1));
+            vBeltRight = X(obj.idx.belt_right(1));
+        else
+
+            vBeltLeft = X(obj.idx.belt_left(iNode+1)); %this only works if the
+        %number of speeds is also nNodes+1
+            vBeltRight = X(obj.idx.belt_right(iNode+1));
+        end
+
+        
         
         if strcmp(obj.Euler,'BE')
-            [~, dfdx, dfdxdot, dfdu] = obj.model.getDynamics(x2,xd,u2);
+            [~, dfdx, dfdxdot, dfdu] = obj.model.getDynamics(x2,xd,u2, vBeltLeft, vBeltRight);
             output(ic,ix1) = -dfdxdot'/h;
             output(ic,ix2) = dfdx' + dfdxdot'/h;
         elseif strcmp(obj.Euler,'ME')

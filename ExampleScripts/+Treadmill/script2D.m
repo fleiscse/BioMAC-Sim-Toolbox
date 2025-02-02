@@ -24,7 +24,7 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
 dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
-% modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
+ %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/Treadmill'; 	        % Relative from the path of the repository
 
 %% Initalization
@@ -33,7 +33,7 @@ dateString = datestr(date, 'yyyy_mm_dd');
 
 % Get absolute file names
 resultFileStanding = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_standing'];
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking'];
+resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_idealTreadmill'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -43,7 +43,7 @@ end
 
 %% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
 % Create an instane of the OpenSim 2D model class using the default settings
-model = Gait2d_osim(modelFile);
+model = Gait2d_osim(modelFile, 1.9, 90);
 % model = Gait2dc(modelFile);
 
 % Call IntroductionExamples.standing2D() to specify the optimizaton problem
@@ -85,7 +85,7 @@ trackingData = TrackingData.loadStruct(dataFile);
 targetSpeed = 0; % m/s
 
 % Create and initialize an instance of the OpenSim 2D model class.
-model = Gait2d_osim(modelFile);
+model = Gait2d_osim(modelFile, 1.9, 90);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
     model.setTreadmillSpeed(1.2);

@@ -17,8 +17,8 @@
 %>                      the model and speed and duration of the periodic movement
 %> @param sym           Boolean if movement is symmetric (half period is optimized) or not
 %======================================================================
-function output = periodicityConstraint(obj,option,X,sym)
-%fprintf('periodic')
+function output = treadSpeedPeriodicityConstraint(obj,option,X,sym)
+fprintf('periodic')
 %% check input parameter
 if ~isfield(obj.idx,'states') || ~isfield(obj.idx,'controls') || ~isfield(obj.idx,'speed') || ~isfield(obj.idx,'dur') % check whether controls are stored in X
     error('State vector X does not contain required states.')
@@ -31,47 +31,40 @@ end
 %% compute demanded output
 nStates = size(obj.idx.states,1);
 nControls =  size(obj.idx.controls,1);
-icx = 1:nStates; % first indices are for the states
-icu = (nStates+1):(nStates+nControls); % next indices are for the controls
+nNodes = obj.nNodes
+icleft = 1;
+icright = 2;
 
 % duration
 dur = X(obj.idx.dur);
 % speed
 speed = X(obj.idx.speed);
-% forward translation in x direction
-unitdisplacementx = zeros(nStates,1);
-unitdisplacementx(obj.model.idxForward) = 1;
-% sideward translation in z direction
-unitdisplacementz = zeros(nStates,1);
-unitdisplacementz(obj.model.idxSideward) = 1;
+
+%
+vBeltLeft = X(obj.idx.belt_left);
+vBeltRight = X(obj.idx.belt_right);
+
 
 if strcmp(option,'confun') %constraints of periodicity constraint
-    output = zeros(nStates+nControls,1);
+    output = 0;
     
-    % compute displacement
-    displacementx = unitdisplacementx*dur*speed(1);
-    if numel(speed) > 1
-        % Sideward displacement in 3D model 
-        displacementz = unitdisplacementz*dur*speed(2); % speed in z direction is assumed to be at speed(2)
-    else
-        % There is no sideward speed given
-        displacementz = 0;
-    end
-    
+   
     if ~sym
-        % state must be periodic, with forward displacement of speed*dur
-        output(icx) = X(obj.idx.states(:,end)) - X(obj.idx.states(:,1)) - displacementx - displacementz;
+        % state must be periodic, but not necessarily symmetric
+        output(icleft) = X(obj.idx.belt_left(:,end)) - X(obj.idx.belt_left(:,1));
         % controls must be periodic
-        output(icu) = X(obj.idx.controls(:,end)) - X(obj.idx.controls(:,1));
+        output(icright) = X(obj.idx.belt_right(:,end)) - X(obj.idx.belt_right(:,1));
+        output(3) = 0;
     else
-        % state must be periodic, with mirroring and forward displacement of speed*dur
-        output(icx) = X(obj.idx.states(:,end)) - obj.model.idxSymmetry.xsign.*X(obj.idx.states(obj.model.idxSymmetry.xindex,1)) - displacementx - displacementz;
+        % state must be periodic, but not necessarily symmetric
+        output(icleft) = X(obj.idx.belt_left(:,end)) - X(obj.idx.belt_left(:,1));
         % controls must be periodic
-        output(icu) = X(obj.idx.controls(:,end)) - obj.model.idxSymmetry.usign.*X(obj.idx.controls(obj.model.idxSymmetry.uindex,1));
+        output(icright) = X(obj.idx.belt_right(:,end)) - X(obj.idx.belt_right(:,1));
+        output(3) = X(obj.idx.belt_right(:,end)) - X(obj.idx.belt_left(:,1 + nNodes/2)); %is this correct??
     end
     
 elseif strcmp(option,'jacobian') %jacobian of periodicity constraint
-    output = spalloc(nStates+nControls,length(X),obj.Jnnz); %> @todo where to get Jnnz
+    output = spalloc(3,length(X),obj.Jnnz); %> @todo where to get Jnnz
     
 
     % compute derivatives of the displacement
@@ -86,7 +79,7 @@ elseif strcmp(option,'jacobian') %jacobian of periodicity constraint
     end
     
     if ~sym
-        output(icx,obj.idx.states(:,end))   = speye(nStates); %create sparse identity matrix 
+        output(icx,obj.idx.states(:,end))   = speye(nStates);
         output(icx,obj.idx.states(:,1))     = -speye(nStates);
         output(icx,obj.idx.dur)             = -displacementxddur-displacementzddur;
         output(icx,obj.idx.speed)           = [-displacementxdspeed, -displacementzdspeed];

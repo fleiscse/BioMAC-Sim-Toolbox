@@ -74,6 +74,41 @@ fychanges = zeros(1*(nNodesDur-1),1);
         fychanges(iNode) = fy_change;
     end
 
+      % what would beltspeed be if we just "kept going?
+
+    v_right_curr = compSpeedR(2);
+    v_right_prev = compSpeedR(1);
+    allspeeds = zeros(1*(nNodesDur-1),1);
+    allspeeds(1) = v_right_prev
+    allspeeds(2) = v_right_curr
+    for iNode=3:(nNodesDur-1)
+
+        delayed_index = mod(iNode - delay-1, nNodesDur-1) +1;
+        delayed_index2 = mod(iNode - delay, nNodesDur-1) +1;
+        
+     
+
+        rfx2 = grfx(delayed_index2)*m; %TODO: check if this is the same as when I add the 2 states
+        rfy2 = grfy(delayed_index2)*m;
+        
+
+        rfx1 = grfx(delayed_index)*m;
+        rfy1 = grfy(delayed_index2)*m;
+      
+        
+        
+
+
+ 
+        v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
+        allspeeds(iNode)=v_right;
+        v_right_prev = v_right_curr;
+        v_right_curr = v_right;
+        
+        
+       
+    end
+
 
         
     

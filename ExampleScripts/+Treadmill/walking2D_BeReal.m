@@ -99,7 +99,7 @@ problem.addConstraint(@periodicityConstraint,zeros(model.nStates+model.nControls
 %problem.addConstraint(@treadSpeedPeriodicityConstraint,zeros(3,1),zeros(3,1),isSymmetric)
 problem.addConstraint(@treadmillSpeedConstraints,repmat([-0.005;0.005],1,nNodes),repmat([-0.005;0.005],1,nNodes))
 %problem.derivativetest()
-%fprintf('passed test')
+fprintf('passed test')
 
 
 end
