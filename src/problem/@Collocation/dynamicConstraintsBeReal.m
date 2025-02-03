@@ -16,7 +16,7 @@
 %> @param X             Double array: State vector containing at least 'states' and 'controls' of
 %>                      the model and speed and duration of the periodic movement
 %======================================================================
-function output = dynamicConstraints(obj,option,X)
+function output = dynamicConstraintsBeReal(obj,option,X)
 
 %% check input parameter
 if ~isfield(obj.idx,'states') || ~isfield(obj.idx,'controls') || ~isfield(obj.idx,'dur') % check whether controls are stored in X
@@ -60,7 +60,7 @@ if strcmp(option,'confun')
             vBeltRight = X(obj.idx.belt_right(1));
         else
 
-            vBeltLeft = X(obj.idx.belt_left(iNode+1)); %or at this node??
+            vBeltLeft = X(obj.idx.belt_left(iNode+1)); %or at this node?? or Inode+1??
             vBeltRight = X(obj.idx.belt_right(iNode+1));
         end
 
@@ -80,13 +80,20 @@ if strcmp(option,'confun')
     end
 elseif strcmp(option,'jacobian')
     output = spalloc(nconstraintspernode*(nNodesDur-1),length(X),obj.Jnnz);
-    
+
+    idxCPxToeL = obj.model.extractState('yc', 'front_l'); %the index of the x position of the contact point in the state vector
+    idxCPxHeelL = obj.model.extractState('yc', 'heel_l'); %the index in the state vector
+    idxCPxToeR = obj.model.extractState('yc', 'front_r'); %the index in the state vecto
+    idxCPxHeelR = obj.model.extractState('yc', 'heel_r'); %the index in the state vector
+
     for iNode = 1:(nNodesDur-1)
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode; %indices of constraints of iNode in c
         
         ix1 = obj.idx.states(:,iNode);
         ix2 = obj.idx.states(:,iNode+1);
         iu2 = obj.idx.controls(:,iNode+1);
+        %ixBeltLeft = obj.idx.belt_left(:,iNode+1);
+       % %ixBeltRight = obj.idx.belt_right(:,iNode+1);
         x1 = X(ix1);
         x2 = X(ix2);
         xd =(x2-x1)/h;
@@ -95,11 +102,15 @@ elseif strcmp(option,'jacobian')
         if iNode == nNodesDur-1
             vBeltLeft = X(obj.idx.belt_left(1));
             vBeltRight = X(obj.idx.belt_right(1));
+            idxBeltLeft = obj.idx.belt_left(1);
+            idxBeltRight = obj.idx.belt_right(1);
         else
 
             vBeltLeft = X(obj.idx.belt_left(iNode+1)); %this only works if the
         %number of speeds is also nNodes+1
             vBeltRight = X(obj.idx.belt_right(iNode+1));
+            idxBeltLeft = obj.idx.belt_left(iNode+1);
+            idxBeltRight = obj.idx.belt_right(iNode+1);
         end
 
         
@@ -108,6 +119,7 @@ elseif strcmp(option,'jacobian')
             [~, dfdx, dfdxdot, dfdu] = obj.model.getDynamics(x2,xd,u2, vBeltLeft, vBeltRight);
             output(ic,ix1) = -dfdxdot'/h;
             output(ic,ix2) = dfdx' + dfdxdot'/h;
+           
         elseif strcmp(obj.Euler,'ME')
             [~, dfdx, dfdxdot, dfdu] = obj.model.getDynamics((x1+x2)/2,xd,u2);
             output(ic,ix1) = dfdx'/2 - dfdxdot'/h;
@@ -124,7 +136,13 @@ elseif strcmp(option,'jacobian')
         
         % derivative of constraints with respect to duration (because h is duration/(N-1))
         output(ic,obj.idx.dur) = -dfdxdot' * (x2-x1) / h^2 / (nNodesDur-1);
-        
+
+        %derivative of constraints wrt to the belt speed
+        prod = dfdxdot'* ones(size(x1,1),1);
+        output(idxCPxHeelL + (iNode-1)*nconstraintspernode ,idxBeltLeft) =  prod(idxCPxHeelL);
+        output(idxCPxToeL + (iNode-1)*nconstraintspernode ,idxBeltLeft) =  prod(idxCPxToeL);
+        output(idxCPxHeelR + (iNode-1)*nconstraintspernode ,idxBeltRight) =  prod(idxCPxHeelR);
+        output(idxCPxToeR + (iNode-1)*nconstraintspernode ,idxBeltRight) =  prod(idxCPxToeR);
     end
 else
     error('Unknown option.');
