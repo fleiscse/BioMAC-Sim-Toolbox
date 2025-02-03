@@ -27,7 +27,7 @@ end
 
 %% compute demanded output
 nNodesDur = obj.nNodesDur; %number of collocation nodes + 1
-
+h = X(obj.idx.dur)/(nNodesDur-1);
 nconstraintspernode = 2; %one for left and one for right
 
 m = -obj.model.bodymass * obj.model.gravity(2);
@@ -64,10 +64,7 @@ if strcmp(option,'confun')
         lfx1 = grfDelayedIx(7)*m;
         lfy1 = grfDelayedIx(8)*m;
 
-        f_current= obj.model.getGRF(X(obj.idx.states(:,mod(iNode-1, nNodesDur-1) +1 )));
-        rfy_current = f_current(2)*m;
-        lfy_current= f_current(8)*m;
-
+     
       
         v_left_curr = X(obj.idx.belt_left(iNode));
         v_left_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
@@ -78,16 +75,10 @@ if strcmp(option,'confun')
         v_left = v_left_curr + Kgrf *((lfx2 - lfx1)/c) + Kgrf*Kfy*((lfy2 - lfy1)/c) + Kpd*Kp*(obj.model.speed_left - v_left_curr) + Kpd*Kd * ((-v_left_curr+ v_left_prev)/c);
         v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(obj.model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
 
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * lfy_current+10));
-        sigmoid_right = 0.0005 + 1 / (1 + exp(-50 * rfy_current+10));
+  
         
         v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
         v_right_next = X(obj.idx.belt_right(mod(iNode, nNodesDur - 1) + 1));
-
-        %apply sigmoid: belt speed should be 1.2 if there is no vertical
-        %force, else the computed speed
-        v_left = sigmoid_left*v_left + (1-sigmoid_left) * obj.model.speed_left;
-        v_right = sigmoid_right*v_right + (1-sigmoid_right) * obj.model.speed_right;
 
         
         diff =  v_left- v_left_next ;
@@ -125,6 +116,15 @@ elseif strcmp(option,'jacobian')
     idxFyToeL = obj.model.extractState('Fy', 'front_l'); %the index in the state vector
     idxFyToeLinX = obj.idx.states(idxFyToeL, :); %all indices of Fx in X (should be len 1xn_nodes)
 
+    idxCPxToeL = obj.model.extractState('xc', 'front_l'); %the index of the x position of the contact point in the state vector
+    idxCPyToeL = obj.model.extractState('yc', 'front_l'); %the index in the state vector
+    idxCPxHeelL = obj.model.extractState('xc', 'heel_l'); %the index in the state vector
+    idxCPyHeelL = obj.model.extractState('yc', 'heel_l'); %the index in the state vector
+
+    idxCPxToeR = obj.model.extractState('xc', 'front_r'); %the index in the state vector
+    idxCPyToeR = obj.model.extractState('yc', 'front_r'); %the index in the state vector
+    idxCPxHeelR = obj.model.extractState('xc', 'heel_r'); %the index in the state vector
+    idxCPyHeelR = obj.model.extractState('yc', 'heel_r'); %the index in the state vector
 
     idxVLeft = obj.idx.belt_left; % the indices of the left Belt speed in X
     idxVRight = obj.idx.belt_right; % the indices of the right belt speed in X
@@ -133,94 +133,75 @@ elseif strcmp(option,'jacobian')
     
     for iNode = 1:(nNodesDur-1)
 
-        f_current= obj.model.getGRF(X(obj.idx.states(:,mod(iNode-1, nNodesDur-1) +1 )));
-        rfy_current = f_current(2)*m;
-        lfy_current= f_current(8)*m;
-
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * lfy_current+10 ));
-        sigmoid_right = 0.0005 + 1 / (1 + exp(-50 * rfy_current+10));
-        
+      
+       
        
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode;
         delayed_index = mod(iNode - delay-1, nNodesDur-1) +1; %starts at 95 if we have 100 nodes or 96 if we have 101 nodes, gets NEGATIVE derivative
         delayed_index2 = mod(iNode - delay, nNodesDur-1) +1; %starts at 96 (for 100 nodes), is gets POSITIVE derivative
+        delayed_index3 = mod(iNode - delay + 1, nNodesDur-1) +1; %starts at 97 (for 100 nodes)
         next_index =  mod(iNode, nNodesDur - 1) + 1;
 
-        delayedIx2 = X(obj.idx.states(:,delayed_index2 )); %mroe recent then delayed Idx
-        delayedIx = X(obj.idx.states(:,delayed_index));
-        
-        grfDelayedIx = obj.model.getGRF(delayedIx);
-        grfDelayedIx2 = obj.model.getGRF(delayedIx2);
+       
+        x1 = X(obj.idx.states(:,delayed_index));
+        x2 = X(obj.idx.states(:,delayed_index2));
+        x3 = X(obj.idx.states(:,delayed_index3));
+        xd =(x2-x1)/h; %state derivatives 
+        xd2 = (x3-x2)/h;
 
-        rfx2 = grfDelayedIx2(1)*m; %TODO: check if this is the same as when I add the 2 states
-        rfy2 = grfDelayedIx2(2)*m;
-        lfx2 = grfDelayedIx2(7)*m;
-        lfy2 = grfDelayedIx2(8)*m;
-
-        rfx1 = grfDelayedIx(1)*m;
-        rfy1 = grfDelayedIx(2)*m;
-        lfx1 = grfDelayedIx(7)*m;
-        lfy1 = grfDelayedIx(8)*m;
-
-        v_left_curr = X(obj.idx.belt_left(iNode));
-        v_left_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
-        v_right_curr = X(obj.idx.belt_right(iNode));
-        v_right_prev = X(obj.idx.belt_right(mod(iNode - 2, nNodesDur-1)+1));
-        
-
-        v_left = v_left_curr + Kgrf *((lfx2 - lfx1)/c) + Kgrf*Kfy*((lfy2 - lfy1)/c) + Kpd*Kp*(obj.model.speed_left - v_left_curr) + Kpd*Kd * ((-v_left_curr+ v_left_prev)/c);
-        v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(obj.model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
-
-
+      
 
         %derivative of left belt wrt left GRFx (at states heel and toe)
-        output(ic(1), idxFxToeLinX(delayed_index2)) = sigmoid_left*m*Kgrf/c;
-        output(ic(1), idxFxHeelLinX(delayed_index2)) = sigmoid_left*m*Kgrf / c;
-        output(ic(1), idxFxToeLinX(delayed_index)) = -sigmoid_left*m*Kgrf/c;
-        output(ic(1), idxFxHeelLinX(delayed_index)) = -sigmoid_left*m*Kgrf / c;
+        output(ic(1), idxFxToeLinX(delayed_index2)) = m*Kgrf/c;
+        output(ic(1), idxFxHeelLinX(delayed_index2)) = m*Kgrf / c;
+        output(ic(1), idxFxToeLinX(delayed_index)) = -m*Kgrf/c;
+        output(ic(1), idxFxHeelLinX(delayed_index)) = -m*Kgrf / c;
+
+        %nachdifferenzieren: dGRFx/dFy = dspeed/dGRFx * dGRFx/dFy
+       
+        v0 = 10^-4;
+        dGRFxdFyToeL2 =  (-1*xd2(idxCPxToeL) / sqrt((xd2(idxCPxToeL)^2+v0^2))) ;
+        dGRFxdFyHeelL2=  (-1*xd2(idxCPxHeelL) / sqrt((xd2(idxCPxHeelL)^2+v0^2)));
+        dGRFxdFyToeL = (-1*xd(idxCPxToeL) / sqrt((xd(idxCPxToeL)^2+v0^2))) ;
+        dGRFxdFyHeelL = (-1*xd(idxCPxHeelL) / sqrt((xd(idxCPxHeelL)^2+v0^2)));
 
 
         %derivative of left belt wrt left GRFy (at states heel and toe)
-        output(ic(1), idxFyToeLinX(delayed_index2)) = sigmoid_left*Kfy * m*Kgrf/c;
-        output(ic(1), idxFyHeelLinX(delayed_index2)) = sigmoid_left*Kfy * m*Kgrf / c;
-        output(ic(1), idxFyToeLinX(delayed_index)) = -m*sigmoid_left*Kgrf* Kfy/c;
-        output(ic(1), idxFyHeelLinX(delayed_index)) = -m*sigmoid_left*Kgrf*Kfy /c;
+        output(ic(1), idxFyToeLinX(delayed_index2)) = Kfy * m*Kgrf/c; %+ dGRFxdFyToeL2;
+        output(ic(1), idxFyHeelLinX(delayed_index2)) = Kfy * m*Kgrf / c; %+ dGRFxdFyHeelL2;
+        output(ic(1), idxFyToeLinX(delayed_index)) = -m*Kgrf* Kfy/c; %- dGRFxdFyToeL;
+        output(ic(1), idxFyHeelLinX(delayed_index)) = -m*Kgrf*Kfy /c; %- dGRFxdFyHeelL;
+
+       
 
         %derivative wrt to next speed
         
         output(ic(1), idxVLeft(next_index)) = -1;
 
-        %derivative wrt to current vertical force
-        output(ic(1), idxFyHeelLinX(mod(iNode-1, nNodesDur-1) +1)) = sigmoid_left * (1-sigmoid_left) * v_left + (-obj.model.speed_left) * sigmoid_left * (1-sigmoid_left);
-        output(ic(1), idxFyToeLinX(mod(iNode-1, nNodesDur-1) +1)) = sigmoid_left * (1-sigmoid_left) * v_left + (-obj.model.speed_left) * sigmoid_left * (1-sigmoid_left);
-
-
+    
         %derivative of right belt wrt right GRFx (at states heel and toe)
-        output(ic(2), idxFxToeRinX(delayed_index2)) = sigmoid_right*m*Kgrf/c;
-        output(ic(2), idxFxHeelRinX(delayed_index2)) = sigmoid_right*m*Kgrf / c;
-        output(ic(2), idxFxToeRinX(delayed_index)) = -sigmoid_right*m*Kgrf/c;
-        output(ic(2), idxFxHeelRinX(delayed_index)) = -sigmoid_right*m*Kgrf / c;
+        output(ic(2), idxFxToeRinX(delayed_index2)) = m*Kgrf/c;
+        output(ic(2), idxFxHeelRinX(delayed_index2)) = m*Kgrf / c;
+        output(ic(2), idxFxToeRinX(delayed_index)) = -m*Kgrf/c;
+        output(ic(2), idxFxHeelRinX(delayed_index)) = -m*Kgrf / c;
 
         %derivative of right belt wrt right GRFy (at states heel and toe)
-        output(ic(2), idxFyToeRinX(delayed_index2)) = Kfy * sigmoid_right*m*Kgrf/c;
-        output(ic(2), idxFyHeelRinX(delayed_index2)) = Kfy *sigmoid_right* m*Kgrf / c;
-        output(ic(2), idxFyToeRinX(delayed_index)) = -m*sigmoid_right*Kgrf* Kfy/c;
-        output(ic(2), idxFyHeelRinX(delayed_index)) = -m*sigmoid_right*Kgrf*Kfy /c;
+        output(ic(2), idxFyToeRinX(delayed_index2)) = Kfy * m*Kgrf/c;
+        output(ic(2), idxFyHeelRinX(delayed_index2)) = Kfy * m*Kgrf / c;
+        output(ic(2), idxFyToeRinX(delayed_index)) = -m*Kgrf* Kfy/c;
+        output(ic(2), idxFyHeelRinX(delayed_index)) = -m*Kgrf*Kfy /c;
 
 
 
-        output(ic(1), idxVLeft(iNode)) = sigmoid_left*(1 -Kpd*Kp - Kpd*Kd/c); % der from pd Part wrt v(n)
-        output(ic(1), idxVLeft(mod(iNode - 2, nNodesDur-1)+1)) =  sigmoid_left*Kpd*Kd/c; %derivative wrt v(n-1)
-
-        output(ic(2), idxVRight(iNode)) = sigmoid_right*(1 -Kpd*Kp - Kpd*Kd/c); % der from pd Part wrt v(n)
-        output(ic(2), idxVRight(mod(iNode - 2, nNodesDur-1)+1)) =  sigmoid_right*Kpd*Kd/c; %derivative wrt v(n-1)
+        output(ic(1), idxVLeft(iNode)) = 1 -Kpd*Kp - Kpd*Kd/c; % der from pd Part wrt v(n)
+        output(ic(1), idxVLeft(mod(iNode - 2, nNodesDur-1)+1)) =  Kpd*Kd/c; %derivative wrt v(n-1)
+        output(ic(2), idxVRight(iNode)) = 1 -Kpd*Kp - Kpd*Kd/c; % der from pd Part wrt v(n)
+        output(ic(2), idxVRight(mod(iNode - 2, nNodesDur-1)+1)) =  Kpd*Kd/c; %derivative wrt v(n-1)
 
         %derivative of left belt wrt previous speed
         output(ic(2), idxVRight(next_index)) = -1;
 
-        %derivative wrt to vertical force
-        output(ic(2), idxFyHeelRinX(mod(iNode -1, nNodesDur-1) +1)) = sigmoid_right * (1-sigmoid_right) * v_right + (-obj.model.speed_right) * sigmoid_right * (1-sigmoid_right);
-        output(ic(2), idxFyToeRinX(mod(iNode -1, nNodesDur-1) +1)) = sigmoid_right * (1-sigmoid_right) * v_right + (-obj.model.speed_right) * sigmoid_right * (1-sigmoid_right);
+       
     end
 else
     error('Unknown option.');
