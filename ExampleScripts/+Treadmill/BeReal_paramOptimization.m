@@ -48,7 +48,7 @@ grfy = experimentalData.grfy.speed_12;
 
 
 targetSpeedTreadmill = 1.2;
-delay = 6;
+delay = 5;
 
 
 problemWalking = Treadmill.params_BeReal(speed, grfx, grfy, targetSpeedTreadmill, delay, resultFile);
@@ -73,4 +73,4 @@ style.figureSize = [0 0 16 26];
 % You might have to press Enter a couple of times in the Command Window
 % for the saving to continue.
 %resultWalking.report(settings, style, resultFileWalking);
-resultWalking.problem.getMetabolicCost(resultWalking.X)
+%resultWalking.problem.getMetabolicCost(resultWalking.X)
