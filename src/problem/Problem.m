@@ -96,7 +96,7 @@ classdef (Abstract) Problem < handle
             fprintf('Checking gradient...\n'); 	obj.matcompare(g, gnum);
             fprintf('Checking Jacobian...\n'); 	obj.matcompare(J, Jnum);
             J = full(J);
-            keyboard
+            tennenlohe dkeyboard
         end        
     end
      methods (Static)
