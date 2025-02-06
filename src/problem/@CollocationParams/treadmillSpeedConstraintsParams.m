@@ -37,7 +37,7 @@ Kgrf = X(obj.idx.Kgrf);
 Kp = X(obj.idx.Kp);
 Kd = X(obj.idx.Kd);
 Kpd = X(obj.idx.Kpd);
-c = X(obj.idx.c);
+c = 0.01;
 
 if strcmp(option,'confun')
     output = zeros(nconstraintspernode*(nNodesDur-1),1);
@@ -89,7 +89,7 @@ elseif strcmp(option,'jacobian')
     idxKp = obj.idx.Kp;
     idxKd = obj.idx.Kd;
     idxKpd = obj.idx.Kpd;
-    idxC = obj.idx.c;
+   % idxC = obj.idx.c;
     
     
     for iNode = 1:(nNodesDur-1)
@@ -135,7 +135,7 @@ elseif strcmp(option,'jacobian')
         output(ic(1), idxKpd)  = Kp*(1.2 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
 
         %derivative wrt c
-        output(ic(1), idxC) = -1 * Kgrf *((fx2 - fx1)/c^2) - Kgrf*Kfy*((fy2 - fy1)/c^2) - Kpd*Kd * ((-v_curr+ v_prev)/c^2);
+       % output(ic(1), idxC) = -1 * Kgrf *((fx2 - fx1)/c^2) - Kgrf*Kfy*((fy2 - fy1)/c^2) - Kpd*Kd * ((-v_curr+ v_prev)/c^2);
 
 
      

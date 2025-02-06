@@ -2,28 +2,26 @@ function [diffs, errors, pds, grfs]= investigateBeltControl(resultWalking)
 
 bL = resultWalking.problem.idx.belt_left;
 compSpeed = resultWalking.X(bL);
-bR = resultWalking.problem.idx.belt_right;
-compSpeedR = resultWalking.X(bR);
+%bR = resultWalking.problem.idx.belt_right;
+%compSpeedR = resultWalking.X(bR);
 plot(compSpeed)
 
 
-model = resultWalking.problem.model;
-m = -model.bodymass * model.gravity(2);
-delay = model.grf_delay;
-Kfy =  model.Kfy;
-Kgrf = model.Kgrf;
-Kp = model.Kp;
-Kd = model.Kd;
-Kpd = model.Kpd;
-c = model.c;
+%model = resultWalking.problem.model;
+%m = -model.bodymass * model.gravity(2);
+delay = 5%model.grf_delay;
+Kfy =  resultWalking.X(101);
+Kgrf = resultWalking.X(102);
+Kp = resultWalking.X(103);
+Kd = resultWalking.X(104);
+Kpd = resultWalking.X(105);
+c = 0.01% model.c;
 
 
 
-data = resultWalking.problem.extractData(resultWalking.X);
-row = strcmp(data.name, 'GRF_x_r');
-grfx = data.sim{row};
-row = strcmp(data.name, 'GRF_y_r');
-grfy = data.sim{row};
+
+grfx = resultWalking.problem.constraintTerms.varargin{1,1};
+grfy = resultWalking.problem.constraintTerms.varargin{1,2};
 nNodesDur=101;
 diffs = zeros(1*(nNodesDur-1),1);
 errors = zeros(1*(nNodesDur-1),1);
@@ -32,7 +30,8 @@ grfs = zeros(1*(nNodesDur-1),1);
 compspeeds = zeros(1*(nNodesDur-1),1);
 fxchanges = zeros(1*(nNodesDur-1),1);
 fychanges = zeros(1*(nNodesDur-1),1);
-
+v_right_curr = compSpeed(100);
+v_right_prev = compSpeed(99);
     
     % dynamic equations must be zero
     for iNode=1:(nNodesDur-1)
@@ -42,27 +41,28 @@ fychanges = zeros(1*(nNodesDur-1),1);
         
      
 
-        rfx2 = grfx(delayed_index2)*m; %TODO: check if this is the same as when I add the 2 states
-        rfy2 = grfy(delayed_index2)*m;
+        rfx2 = grfx(delayed_index2); %TODO: check if this is the same as when I add the 2 states
+        rfy2 = grfy(delayed_index2);
         
 
-        rfx1 = grfx(delayed_index)*m;
-        rfy1 = grfy(delayed_index2)*m;
+        rfx1 = grfx(delayed_index);
+        rfy1 = grfy(delayed_index);
       
-        v_right_curr = compSpeedR(iNode);
-        v_right_prev = compSpeedR(mod(iNode - 2, nNodesDur-1)+1);
-        
+      %  v_right_curr = compSpeed(iNode);
+        %v_right_prev = compSpeed(mod(iNode - 2, nNodesDur-1)+1);
+       % v_right_curr = v_right
+      %  v_right_prev = v_right
 
-
- 
-        v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
-        fx_change=(rfx2 - rfx1)/c;
+        v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(1.2 - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
+        fx_change=(rfx2 - rfx1)/c
         fy_change=(rfy2 - rfy1)/c;
         grf_part = Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c);
-        pd_part = Kpd*Kp*(model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
-        e = model.speed_right - v_right_curr;
+        pd_part = Kpd*Kp*(1.2 - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c)
+        e = 1.2 - v_right_curr;
         
-        v_right_next = compSpeedR(mod(iNode, nNodesDur - 1) + 1);
+        v_right_next = compSpeed(mod(iNode, nNodesDur - 1) + 1);
+        v_right_prev = v_right_curr;
+        v_right_curr = v_right;
         
         compspeeds(iNode)=v_right;
         diff = v_right - v_right_next ;

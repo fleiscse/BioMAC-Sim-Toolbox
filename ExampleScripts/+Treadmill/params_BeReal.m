@@ -50,12 +50,12 @@ problem = CollocationParams(nNodes, Euler, logfile, plotLog);
 problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, add extra node
 
 %problem.addOptimVar('grf_delay', 2, 9);
-problem.addOptimVar('Kfy', -0.5, 0);
-problem.addOptimVar('Kgrf', 0.001, 0.3);
-problem.addOptimVar('Kp', 0, 10);
-problem.addOptimVar('Kd', -0.4, 0);
-problem.addOptimVar('Kpd', 0.01, 0.5);
-problem.addOptimVar('c', 0.001, 0.2);
+problem.addOptimVar('Kfy', -0.3, 0, -0.18124);
+problem.addOptimVar('Kgrf', 0.00001, 0.1, 1.198787283721859e-05);
+problem.addOptimVar('Kp', 0, 5, 3.3260351576);
+problem.addOptimVar('Kd', -0.5, 0, -0.012040885);
+problem.addOptimVar('Kpd', 0, 0.5, 0.2429888);
+%problem.addOptimVar('c', 0.01, 0.01);
 
 
 % Add speed in x direction of the movement. We choose here targetspeed for
@@ -79,6 +79,8 @@ problem.addObjective(@trackBeltSpeed, W_track, speed);
 
 lb = repmat(0.00,1,nNodes);
 up = repmat(0.00,1,nNodes);
+%lb(95:100) = -0.5;
+%up(95:100) = 0.5;
 problem.addConstraint(@treadmillSpeedConstraintsParams,lb,up, grfx, grfy, delay)
 %problem.derivativetest()
 fprintf('passed test')
