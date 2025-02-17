@@ -35,20 +35,26 @@ end
 %% compute demanded output
 xd.states = diff(X(obj.idx.states),1,2);
 xd.controls = diff(X(obj.idx.controls),1,2);
-nvarpernode = size(obj.idx.states,1)+size(obj.idx.controls,1);
+xd.belt_speedR = diff(X(obj.idx.belt_right),1);
+xd.belt_speedL = diff(X(obj.idx.belt_left),1);
+nvarpernode = size(obj.idx.states,1)+size(obj.idx.controls,1) + size(obj.idx.belt_right,1) + size(obj.idx.belt_left,1);
 duration = X(obj.idx.dur);
 nNodesDur = obj.nNodesDur;
 factor = (nNodesDur-1)/nvarpernode/duration^2; % see 1/(N-1)/nVars * sum(sum( ((x2-x1)/(dur/(N-1)))^2 )) = (N-1)/nVars/dur^2 * sum(sum( (x2-x1)^2 ))
 
 if strcmp(option,'objval') 
-    output = factor*(sum(sum(xd.states.^2)) + sum(sum(xd.controls.^2))); % make it the average
+    output = factor*(sum(sum(xd.states.^2)) + sum(sum(xd.controls.^2)) + sum(sum(xd.belt_speedR.^2)) + sum(sum(xd.belt_speedL.^2))); % make it the average
 elseif strcmp(option,'gradient')
     output = zeros(size(X));
     output(obj.idx.states(:,1:end-1))   = output(obj.idx.states(:,1:end-1))   - 2*factor*xd.states;
     output(obj.idx.states(:,2:end))     = output(obj.idx.states(:,2:end))     + 2*factor*xd.states;
     output(obj.idx.controls(:,1:end-1)) = output(obj.idx.controls(:,1:end-1)) - 2*factor*xd.controls;
     output(obj.idx.controls(:,2:end))   = output(obj.idx.controls(:,2:end))   + 2*factor*xd.controls;
-    output(obj.idx.dur)                 = -2*(nNodesDur-1)/nvarpernode/duration^3*(sum(sum(xd.states.^2)) + sum(sum(xd.controls.^2)));
+    output(obj.idx.belt_right(:,1:end-1)) = output(obj.idx.belt_right(:,1:end-1)) - 2*factor*xd.belt_speedR;
+    output(obj.idx.belt_right(:,2:end))   = output(obj.idx.belt_right(:,2:end))   + 2*factor*xd.belt_speedR;
+    output(obj.idx.belt_left(:,1:end-1)) = output(obj.idx.belt_left(:,1:end-1)) - 2*factor*xd.belt_speedL;
+    output(obj.idx.belt_left(:,2:end))   = output(obj.idx.belt_left(:,2:end))   + 2*factor*xd.belt_speedL;
+    output(obj.idx.dur)                 = -2*(nNodesDur-1)/nvarpernode/duration^3*(sum(sum(xd.states.^2)) + sum(sum(xd.controls.^2)) + sum(sum(xd.belt_speedR.^2)) + sum(sum(xd.belt_speedL.^2)));
 else
     error('Unknown option.');
 end
