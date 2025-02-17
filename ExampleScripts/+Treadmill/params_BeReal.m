@@ -81,7 +81,7 @@ lb = repmat(-0.001,1,nNodes);
 up = repmat(0.001,1,nNodes);
 %lb(80:100) = -0.5;
 %up(80:100) = 0.5;
-problem.addConstraint(@treadmillSpeedConstraintsParamsSigmoid,lb,up, grfx, grfy, delay)
+problem.addConstraint(@treadmillSpeedConstraintsParams,lb,up, grfx, grfy, delay)
 %problem.derivativetest()
 fprintf('passed test')
 
