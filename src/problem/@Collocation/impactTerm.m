@@ -38,7 +38,7 @@ if strcmp(option,'init')
         obj.objectiveInit.(fctname).grf_idx = [53 54 57 58 61 62 65 66];
     elseif isa(obj.model,'Gait2d_osim') 
         if  obj.model.nDofs == 9
-            obj.objectiveInit.(fctname).grf_idx = [55 56 61 62 67 68 73 74];
+            obj.objectiveInit.(fctname).grf_idx = [55 56 59 60 63 64 67 68];
         elseif obj.model.nDofs == 10
             obj.objectiveInit.(fctname).grf_idx = [55 56 61 62 67 68 73 74]+2;
         end           

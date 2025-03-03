@@ -6,6 +6,8 @@ bR = resultWalking.problem.idx.belt_right;
 compSpeedR = resultWalking.X(bR);
 plot(compSpeed)
 
+grfx = resultWalking.X
+
 
 model = resultWalking.problem.model;
 m = -model.bodymass * model.gravity(2);
@@ -36,9 +38,15 @@ fychanges = zeros(1*(nNodesDur-1),1);
     
     % dynamic equations must be zero
     for iNode=1:(nNodesDur-1)
+        X = resultWalking.X;
 
         delayed_index = mod(iNode - delay-1, nNodesDur-1) +1;
         delayed_index2 = mod(iNode - delay, nNodesDur-1) +1;
+
+        delayed_index = mod(iNode - delay-1, nNodesDur-1) +1;
+        delayed_index2 = mod(iNode - delay, nNodesDur-1) +1;
+        delayedIx2 = X(resultWalking.problem.idx.states(:,delayed_index2 )); %mroe recent then delayed Idx
+        delayedIx = X(resultWalking.problem.idx.states(:,delayed_index));
         
      
 
@@ -48,6 +56,19 @@ fychanges = zeros(1*(nNodesDur-1),1);
 
         rfx1 = grfx(delayed_index)*m;
         rfy1 = grfy(delayed_index2)*m;
+
+        grfDelayedIx = resultWalking.problem.model.getGRF(delayedIx);
+        grfDelayedIx2 = resultWalking.problem.model.getGRF(delayedIx2);
+
+        rfx2 = grfDelayedIx2(1)*m; %TODO: check if this is the same as when I add the 2 states
+        rfy2 = grfDelayedIx2(2)*m;
+        lfx2 = grfDelayedIx2(7)*m;
+        lfy2 = grfDelayedIx2(8)*m;
+
+        rfx1 = grfDelayedIx(1)*m;
+        rfy1 = grfDelayedIx(2)*m;
+        lfx1 = grfDelayedIx(7)*m;
+        lfy1 = grfDelayedIx(8)*m;
       
         v_right_curr = compSpeedR(iNode);
         v_right_prev = compSpeedR(mod(iNode - 2, nNodesDur-1)+1);

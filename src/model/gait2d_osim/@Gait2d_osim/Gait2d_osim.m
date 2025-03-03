@@ -97,13 +97,14 @@ classdef Gait2d_osim < Model
                 bodymass=90;
             end
             if nargin > 1
+                obj.bodyheight = scale_factors;
                 if nargin < 3 
                     bodymass = 90;
                 end
                 % Scaling writes to a _tmp opensimfile, therefore
                 [opensimfile, obj.hash] = Gait2d_osim.scaleOsim(opensimfile, scale_factors, bodymass, varargin{:});  
             end
-
+           
             obj.loadOsimFile(opensimfile); % read opensim file
             obj.loadMomentArms; % load moment arm file
             nameMEX = Gait2d_osim.getMexFiles(obj.osim.name); % Check whether (up-to-date) compilation of model exists and if not (re-)compile
@@ -1483,7 +1484,8 @@ classdef Gait2d_osim < Model
             
             %% Contact points, we use the location of the mtp joint for scale factors
             % Issue in OpenSim: Contact points are not affected by scaling
-            generic_mtp = [0.1300   -0.0440]; 
+            %generic_mtp = [0.1300   -0.0440]; 
+            generic_mtp = [0.1300   -0.0440];
             sf_l = (obj.joints{'subtalar_l','location'}(1:2) + obj.joints{'mtp_l','location'}(1:2))/generic_mtp;
             sf_r = (obj.joints{'subtalar_r','location'}(1:2) + obj.joints{'mtp_r','location'}(1:2))/generic_mtp;
           

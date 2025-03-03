@@ -78,8 +78,8 @@ if strcmp(option,'confun')
         v_left = v_left_curr + Kgrf *((lfx2 - lfx1)/c) + Kgrf*Kfy*((lfy2 - lfy1)/c) + Kpd*Kp*(obj.model.speed_left - v_left_curr) + Kpd*Kd * ((-v_left_curr+ v_left_prev)/c);
         v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(obj.model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
 
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * lfy_current+10));
-        sigmoid_right = 0.0005 + 1 / (1 + exp(-50 * rfy_current+10));
+        sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * lfy_current+1000));
+        sigmoid_right = 0.0000001 + 1 / (1 + exp(-50 * rfy_current+1000));
         
         v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
         v_right_next = X(obj.idx.belt_right(mod(iNode, nNodesDur - 1) + 1));
@@ -137,8 +137,8 @@ elseif strcmp(option,'jacobian')
         rfy_current = f_current(2)*m;
         lfy_current= f_current(8)*m;
 
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * lfy_current+10 ));
-        sigmoid_right = 0.0005 + 1 / (1 + exp(-50 * rfy_current+10));
+        sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * lfy_current+1000 ));
+        sigmoid_right = 0.0000001 + 1 / (1 + exp(-50 * rfy_current+1000));
         
        
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode;

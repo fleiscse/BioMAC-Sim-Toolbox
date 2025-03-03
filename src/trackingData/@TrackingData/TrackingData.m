@@ -203,6 +203,10 @@ classdef TrackingData < handle & matlab.mixin.Copyable
                 error('TrackingData:setParameter', e.message);
             end
         end
+
+        function obj = setVariables(obj, newVariables)
+            obj.variables = newVariables;
+        end
         
         %======================================================================
         %> @brief Function to save the TrackingData object

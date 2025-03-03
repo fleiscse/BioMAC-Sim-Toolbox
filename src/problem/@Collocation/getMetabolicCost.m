@@ -94,7 +94,10 @@ nNodesDur= obj.nNodesDur;               % Number of nodes defining the duration
 T        = X(obj.idx.dur);              % Duration of movement
 h        = T/(nNodesDur-1);             % Duration of time step
 if isfield(obj.idx,'speed')
-    speed    = norm(X(obj.idx.speed));            % Speed in forward direction in m/s
+    speed    = norm(X(obj.idx.speed));  % Speed in forward direction in m/s
+    if speed ==0
+        speed = obj.model.speed_right; %if treadmill: use desired speed instead of speed
+    end
 else
     deltaX = sum(abs(diff(X(obj.idx.states(obj.model.extractState('q', 'pelvis_tx'), :)))));
     if isa(obj.model, 'Gait3d')

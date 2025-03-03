@@ -25,21 +25,17 @@ dataFolder     = 'data/Walking';                % Relative from the path of the 
 dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
  %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
-resultFolder   = 'results/18/overground6';%'results/overground'%'results/TCSG/ideal'; 
-resultFolder2   = 'results/TCSG/18/ideal_from_overground6'; %'results/TCSG/ideal_from_overground'; 	        % Relative from the path of the repository
-% Relative from the path of the repository
+resultFolder   = 'results/TCSG/18/overground6'; 
+resultFolder1   = 'results/initial_guesses';% Relative from the path of the repository
 
 %% Initalization
 % Get date
 dateString = datestr(date, 'yyyy_mm_dd');
 
 % Get absolute file names
-resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing1'];
-resultFileStanding = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\overground\2025_02_26_sript2D_overground_walking_overground_12_1';
-resultFileStanding = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\overground6\2025_02_28_sript2D_overground_walking_overground_12_1';
+resultFileStanding = [path2repo,filesep,resultFolder1,filesep,'standing1'];
 
-
-resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_1'];
+resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground_12_1'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -49,13 +45,13 @@ end
 
 %% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
 % Create an instane of the OpenSim 2D model class using the default settings
- %model = Gait2d_osim(modelFile, 1.9, 100);
+% model = Gait2d_osim(modelFile, 1.9, 100);
 % model = Gait2dc(modelFile);
 
 % Call IntroductionExamples.standing2D() to specify the optimizaton problem
 % We use the same function as in IntroductionExamples, since we are solving
 % the same problem.
- %problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
+% problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
 % 
 % % Create an object of class solver. We use most of the time the IPOPT here.
 % solver = IPOPT();
@@ -65,13 +61,13 @@ end
 % solver.setOptionField('constr_viol_tol', 0.000001);
 % 
 % % Solve the optimization problem
- %resultStanding = solver.solve(problemStanding);
+% resultStanding = solver.solve(problemStanding);
 % 
 % % Save the result
 % resultStanding.save(resultFileStanding);
 % 
 % % To plot the result we have to extract the states x from the result vector X
- %x = resultStanding.X(resultStanding.problem.idx.states);
+% x = resultStanding.X(resultStanding.problem.idx.states);
 % 
 % % Now, we can plot the stick figure visualizing the result
 % figure();
@@ -86,16 +82,17 @@ end
 %% Simulate walking on a single belt or split-belt treadmill
 % Load tracking data struct and create a TrackingData object
 trackingData = TrackingData.loadStruct(dataFile);
-% The global speed is going to be zeros, as the movement now comes from the treadmill
 
 
-targetSpeed = 0; % m/s
+
+% The global speed
+targetSpeed = 1.8; % m/s
 
 % Create and initialize an instance of the OpenSim 2D model class.
 model = Gait2d_osim(modelFile, 1.9, 100);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
-    model.setTreadmillSpeed(1.8);
+    model.setTreadmillSpeed(0); % set to 0 for "overground" walking
 else
     speed.left = 1.15;
     speed.right = 1.25;
@@ -104,7 +101,7 @@ end
 
 isSymmetric = 0;
 initialGuess = resultFileStanding;
-problemWalking = Treadmill.walking2D(model, resultFileWalking, trackingData, targetSpeed, isSymmetric, initialGuess);
+problemWalking = Treadmill.walking2D_overground(model, resultFileWalking, trackingData, targetSpeed, isSymmetric, initialGuess);
 
 % Create solver and change solver settings
 solver = IPOPT();

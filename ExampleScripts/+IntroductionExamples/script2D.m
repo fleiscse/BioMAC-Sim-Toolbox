@@ -33,7 +33,7 @@ dateString = datestr(date, 'yyyy_mm_dd');
 
 % Get absolute file names
 resultFileStanding = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_standing'];
-resultFileRunning  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_running'];
+resultFileRunning  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_overground'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -44,7 +44,7 @@ end
 
 %% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
 % Create an instane of our 2D model class using the default settings
-model = Gait2dc(modelFile);
+model = Gait2dc(modelFile, 1.9, 100);
 % => We use a mex function for some functionality of the model. This was
 % automatically initialized with the correct settings for the current
 % model. (see command line output)
@@ -86,13 +86,13 @@ trackingData = TrackingData.loadStruct(dataFile);
 % We set the targetspeed of the simulation. By constraining the speed, we
 % ensure that the simulation will use this speed. The speed we choose
 % reflects the speed of the trackingData, but speed can also be left free. 
-targetSpeed = 3.5; % m/s
+targetSpeed = 1.2; % m/s
 
 % Create and automatically initalize an instance of our 2D model class.  
 % To fit the tracking data we have to scale the default model. This is done
 % using the height and mass of the participant.
-model = Gait2dc(modelFile, trackingData.participantHeight, trackingData.participantMass);
-
+%model = Gait2dc(modelFile, trackingData.participantHeight, trackingData.participantMass);
+model = Gait2dc(modelFile, 1.9, 100);
 % The data we use in this example was recorded using a treadmill. Therefore,
 % we have the change the coeffienct of the air drag in the model. 
 model.drag_coefficient = 0;
@@ -102,7 +102,7 @@ model.drag_coefficient = 0;
 
 % Call IntroductionExamples.running2D() to specify the optimizaton problem
 % => Take a look inside the function ;)
-isSymmetric = 1;
+isSymmetric = 0;
 initialGuess = resultFileStanding;
 problemRunning = IntroductionExamples.running2D(model, resultFileRunning, trackingData, targetSpeed, isSymmetric, initialGuess);
 

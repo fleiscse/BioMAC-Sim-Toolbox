@@ -24,17 +24,24 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
 dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
-resultFolder   = 'results/Treadmill'; 	        % Relative from the path of the repository
+resultFolder   = 'results/TGCS/overground'%'results/TCSG/ideal'; 
+resultFolder2   = 'results/TCSG/real_from_overgroundHighEffort1000'; 	        % Relative from the path of the repository
+% Relative from the path of the repository
 
 %% Initalization
 % Get date
 dateString = datestr(date, 'yyyy_mm_dd');
 
 % Get absolute file names
-resultFileStanding = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_standing'];
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_optionB'];
-resultFileWalkingIdealTreadmill  = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\Treadmill\2025_01_21_script2D_walking_idealTreadmill';
+%resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing1'];
+
+
+%resultFileStanding = "C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\Treadmill\2025_02_17_script2D_standing";
+resultFileWalkingIdealTreadmill  = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\overgroundHighEffort\2025_02_27_sript2D_overground_walking_overground_12_1';
+
+resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_1'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
+
 
 % Create resultfolder if it does not exist
 if ~exist([path2repo,filesep,resultFolder], 'dir')
@@ -82,11 +89,32 @@ end
 % Load tracking data struct and create a TrackingData object
 trackingData = TrackingData.loadStruct(dataFile);
 
+%beltspeed = load('data/Walking/experimentalSpeeds.mat');
+%rightSpeed = beltspeed.speed_12;
+%rightSpeed(65:100) = 1.2;
+%first_half = rightSpeed(1:50);   % First 50 samples
+%second_half = rightSpeed(51:100); % Last 50 samples
+
+% Rearrange: Second half first, then first half
+% leftSpeed = [second_half, first_half];
+% 
+% newRows = table(...
+%     {'belt_r'; 'belt_l'}, ...    % Column 1: name
+%     {'beltspeed'; 'beltspeed'}, ...          % Column 2: type (adjust if needed)
+%     {rightSpeed.';leftSpeed.'}, ... % Column 3: mean (replace with actual data)
+%     {ones(100,1); ones(100,1)}, ... % Column 4: var (replace with actual variance)
+%     {'BW'; 'BW'}, ...            % Column 5: unit
+%     'VariableNames', trackingData.variables.Properties.VariableNames ... % Ensure same column names
+% );
+% 
+% % Append the new rows to the existing table
+% trackingData = trackingData.setVariables([trackingData.variables; newRows]);
+
 % The global speed is going to be zeros, as the movement now comes from the treadmill
 targetSpeed = 0; % m/s
 
-% Create and initialize an instance of the OpenSim 2D model class.
-model = Gait2d_osim_tread(modelFile, 1.8, 100);
+% Create and initia  lize an instance of the OpenSim 2D model class.
+model = Gait2d_osim_tread(modelFile, 1.9, 100);
 %model = Gait2d_osim_tread(modelFile);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
@@ -124,4 +152,4 @@ style.figureSize = [0 0 16 26];
 % You might have to press Enter a couple of times in the Command Window
 % for the saving to continue.
 %resultWalking.report(settings, style, resultFileWalking);
-resultWalking.problem.getMetabolicCost(resultWalking.X)
+resultWalking.problem.getMetabolicCost(resultWalking.X);
