@@ -17,7 +17,7 @@
 %>                      the model and current treadmill speeds
 %> @param sym           Boolean if movement is symmetric (half period is optimized) or not
 %======================================================================
-function output = treadmillSpeedConstraintsParamsSigmoid(obj,option,X,grfx, grfy, delay)
+function output = treadmillSpeedConstraintsParamsSigmoid18(obj,option,X,grfx, grfy, delay)
 
 %% check input parameter
 if ~isfield(obj.idx,'belt_left') % check whether controls are stored in X
@@ -62,7 +62,7 @@ if strcmp(option,'confun')
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
        
         
-        v_left = v_curr + Kgrf *((fx2 - fx1)/c) + Kgrf*Kfy*((fy2 - fy1)/c) + Kpd*Kp*(1.2 - v_curr) + Kpd*Kd * ((-v_curr+ v_prev)/c);
+        v_left = v_curr + Kgrf *((fx2 - fx1)/c) + Kgrf*Kfy*((fy2 - fy1)/c) + Kpd*Kp*(1.8 - v_curr) + Kpd*Kd * ((-v_curr+ v_prev)/c);
 
         sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
         
@@ -70,7 +70,7 @@ if strcmp(option,'confun')
 
         %apply sigmoid: belt speed should be 1.2 if there is no vertical
         %force, else the computed speed
-        v_left = sigmoid_left*v_left + (1-sigmoid_left) * 1.2;
+        v_left = sigmoid_left*v_left + (1-sigmoid_left) * 1.8;
         
         diff =  v_left- v_left_next ;
         output(ic) = diff;	% backward Euler discretization
@@ -133,9 +133,9 @@ elseif strcmp(option,'jacobian')
         output(ic(1), idxKfy) = sigmoid_left*Kgrf*((fy2 - fy1)/c);
 
         %derivative wrt Kp, Kd and Kpd
-        output(ic(1), idxKp) = sigmoid_left*Kpd*(1.2 - v_curr);
+        output(ic(1), idxKp) = sigmoid_left*Kpd*(1.8- v_curr);
         output(ic(1), idxKd) = sigmoid_left*Kpd* ((-v_curr+ v_prev)/c);
-        output(ic(1), idxKpd)  = sigmoid_left*Kp*(1.2 - v_curr) + sigmoid_left*Kd * ((-v_curr+ v_prev)/c);
+        output(ic(1), idxKpd)  = sigmoid_left*Kp*(1.8 - v_curr) + sigmoid_left*Kd * ((-v_curr+ v_prev)/c);
 
         %derivative wrt c
        % output(ic(1), idxC) = -1 * Kgrf *((fx2 - fx1)/c^2) - Kgrf*Kfy*((fy2 - fy1)/c^2) - Kpd*Kd * ((-v_curr+ v_prev)/c^2);
