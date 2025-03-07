@@ -4,20 +4,28 @@ clc
 
 % Settings
 % Path to the results
+folderOverground = 'C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\overground';
+
 folderReal = 'C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\real';
 folderIdeal = 'C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\ideal';
+
+folderIdeal = 'C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\ideal_from_overground6';
+folderReal= 'C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\real_from_overground6';
+
 
 save_location = 'C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG';
 
 % Initialize cell array with column names
-resVar = cell(10, 6); % Preallocate for efficiency
+resVar = cell(15, 2); % Preallocate for efficiency
 
 % Define column headers
-columnNames = {'ExtractedData', 'Type', 'MetCost', 'MetCostPerMus', 'MetRate', 'CoT'};
+columnNames = {'ExtractedData', 'Type'};
 
 % Process ideal data
 for i = 1:5
-    resultFile = [folderIdeal, filesep, '2025_02_26_script2D12_from_standing', num2str(i)];
+     filePattern = fullfile(folderIdeal, ['*', num2str(i), '.mat']);
+    fileList = dir(filePattern);
+    resultFile = fullfile(folderIdeal, fileList(1).name);
     res = load(resultFile);
     result = res.result;
     
@@ -32,18 +40,12 @@ for i = 1:5
     resVar{i, 1} = result.problem.extractData(result.X, settings, [], 1);
     resVar{i, 2} = 'ideal';
 
-    % Compute metabolic cost
-    [metCost, dmetCostdX, metCostPerMus, metRate, CoT] = result.problem.getMetabolicCost(result.X);
-    
-    resVar{i, 3} = metCost;
-    resVar{i, 4} = metCostPerMus;
-    resVar{i, 5} = metRate;
-    resVar{i, 6} = CoT;
 end
-
 % Process real data
 for i = 1:5
-    resultFile = [folderReal, filesep, '2025_02_26_script2D_BeReal12_from_standing', num2str(i)];
+    filePattern = fullfile(folderReal, ['*', num2str(i), '.mat']);
+    fileList = dir(filePattern);
+    resultFile = fullfile(folderReal, fileList(1).name);
     res = load(resultFile);
     result = res.result;
     
@@ -58,90 +60,33 @@ for i = 1:5
     resVar{i+5, 1} = result.problem.extractData(result.X, settings, [], 1);
     resVar{i+5, 2} = 'real';
 
-    % Compute metabolic cost
-    [metCost, dmetCostdX, metCostPerMus, metRate, CoT] = result.problem.getMetabolicCost(result.X);
-    
-    resVar{i+5, 3} = metCost;
-    resVar{i+5, 4} = metCostPerMus;
-    resVar{i+5, 5} = metRate;
-    resVar{i+5, 6} = CoT;
+  
 end
+for i = 1:5
+    filePattern = fullfile(folderOverground, ['*', num2str(i), '.mat']);
+    fileList = dir(filePattern);
+    resultFile = fullfile(folderOverground, fileList(1).name);
+    res = load(resultFile);
+    result = res.result;
+    
+    settings.angle  = {'hip_flexion_r', 'knee_angle_r', 'ankle_angle_r', 'pelvis_ty', 'pelvis_tilt'};
+    settings.moment = {'hip_flexion_r', 'knee_angle_r', 'ankle_angle_r', 'pelvis_ty', 'pelvis_tilt'};
+    settings.u      = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', 'rect_fem_r', 'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
+    settings.a      = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', 'rect_fem_r', 'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
 
+    step_dur = result.X(result.problem.idx.dur); % Duration of movement
+    
+    % Extract data and store in resVar
+    resVar{i+10, 1} = result.problem.extractData(result.X, settings, [], 1);
+    resVar{i+10, 2} = 'overground';
+
+
+  
+end
 % Convert resVar to a table for better readability
 resTable = cell2table(resVar, 'VariableNames', columnNames);
 
-% Extract indices for ideal and real trials
-%idealIdx = strcmp(resTable.Type, 'ideal');
-%realIdx = strcmp(resTable.Type, 'real');
-
-% Initialize results structure
-%results = struct();
-
-% Compute Mean & Median for Overall Metabolic Measures
-% metrics = {'MetCost', 'MetRate', 'CoT'};
-% for i = 1:length(metrics)
-%     metric = metrics{i};
-%     
-%     % Convert table column to array
-%     idealValues = table2array(resTable(idealIdx, metric)); 
-%     realValues = table2array(resTable(realIdx, metric));
-% 
-%     % Compute mean & median
-%     results.(metric).mean.ideal = mean(idealValues, 'omitnan');
-%     results.(metric).median.ideal = median(idealValues, 'omitnan');
-%     results.(metric).mean.real = mean(realValues, 'omitnan');
-%     results.(metric).median.real = median(realValues, 'omitnan');
-%     
-%     % Display results
-%     fprintf('\n%s:\n', metric);
-%     fprintf('  Ideal -> Mean: %.4f, Median: %.4f\n', results.(metric).mean.ideal, results.(metric).median.ideal);
-%     fprintf('  Real  -> Mean: %.4f, Median: %.4f\n', results.(metric).mean.real, results.(metric).median.real);
-% end
-% 
-% % Get number of muscles (assuming 18 muscles per trial)
-% numMuscles = size(resTable.MetCostPerMus{1}, 1);
-% 
-% % Create muscle index labels (assuming ordered muscle names)
-% muscleNames = arrayfun(@(x) sprintf('Muscle_%d', x), 1:numMuscles, 'UniformOutput', false);
-% 
-% % Initialize result tables
-% metCostPerMus_mean = table('Size', [numMuscles, 3], ...
-%                            'VariableTypes', {'string', 'double', 'double'}, ...
-%                            'VariableNames', {'Muscle', 'Mean_Ideal', 'Mean_Real'});
-% 
-% metCostPerMus_median = table('Size', [numMuscles, 3], ...
-%                              'VariableTypes', {'string', 'double', 'double'}, ...
-%                              'VariableNames', {'Muscle', 'Median_Ideal', 'Median_Real'});
-% 
-% % Extract MetCostPerMus data from resTable
-% idealValues = cat(3, resTable.MetCostPerMus{idealIdx}); % Stack along 3rd dimension
-% realValues = cat(3, resTable.MetCostPerMus{realIdx});   % Stack along 3rd dimension
-% 
-% % Compute mean & median per muscle
-% meanIdeal = mean(idealValues, 3, 'omitnan');
-% medianIdeal = median(idealValues, 3, 'omitnan');
-% meanReal = mean(realValues, 3, 'omitnan');
-% medianReal = median(realValues, 3, 'omitnan');
-% 
-% % Fill result tables
-% for i = 1:numMuscles
-%     metCostPerMus_mean.Muscle(i) = muscleNames{i};
-%     metCostPerMus_mean.Mean_Ideal(i) = meanIdeal(i);
-%     metCostPerMus_mean.Mean_Real(i) = meanReal(i);
-% 
-%     metCostPerMus_median.Muscle(i) = muscleNames{i};
-%     metCostPerMus_median.Median_Ideal(i) = medianIdeal(i);
-%     metCostPerMus_median.Median_Real(i) = medianReal(i);
-% end
-% 
-% % Display tables
-% disp('Mean MetCost Per Muscle:');
-% disp(metCostPerMus_mean);
-
-
-
-
-
+meanDataStruct = struct();
 
 % Extract unique data types
 dataTypes = unique(resTable.ExtractedData{1}.type);
@@ -160,6 +105,8 @@ for d = 1:length(dataTypes)
     rows = ceil(sqrt(numVars)); % Adjust for grid layout
     cols = ceil(numVars / rows);
     
+
+    meanDataStruct.(dataType) = struct();
     % Loop through each variable under this data type
     for v = 1:numVars
         varName = varNames{v};
@@ -170,9 +117,11 @@ for d = 1:length(dataTypes)
         % Initialize arrays for ideal and real
         idealData = [];
         realData = [];
+        overgroundData = [];
         
-        % Extract relevant data for each trial
-        for i = 1:10
+        % Extract relevant data for each trial#
+      
+        for i = 1:15
             extractedData = resTable.ExtractedData{i};
        
             idx = strcmp(extractedData.name, varName) & strcmp(extractedData.type, dataType);
@@ -184,8 +133,10 @@ for d = 1:length(dataTypes)
             
             if strcmp(resTable.Type{i}, 'ideal')
                 idealData = cat(3, idealData, dataMatrix);
-            else
+            elseif strcmp(resTable.Type{i}, 'real')
                 realData = cat(3, realData, dataMatrix);
+            else
+                overgroundData = cat(3, overgroundData, dataMatrix);
             end
         end
         
@@ -194,6 +145,12 @@ for d = 1:length(dataTypes)
         stdIdeal = std(idealData, 0, 3);
         meanReal = mean(realData, 3);
         stdReal = std(realData, 0, 3);
+        meanOverground = mean(overgroundData, 3);
+
+        meanDataStruct.(dataType).(varName) = struct();
+        meanDataStruct.(dataType).(varName).ideal = meanIdeal;
+        meanDataStruct.(dataType).(varName).real = meanReal;
+        meanDataStruct.(dataType).(varName).overground = meanOverground;
         
         % Time vector (assuming all have same length)
         timeVector = [1:1:100];
@@ -203,29 +160,265 @@ for d = 1:length(dataTypes)
         hold on;
         
         % Plot mean and shaded std for ideal
-        fill([timeVector, fliplr(timeVector)], ...
-             [meanIdeal + stdIdeal; flipud(meanIdeal - stdIdeal)], ...
-             'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+%         fill([timeVector, fliplr(timeVector)], ...
+%              [meanIdeal + stdIdeal; flipud(meanIdeal - stdIdeal)], ...
+%              'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
         plot(timeVector, meanIdeal, 'b');
         
-        % Plot mean and shaded std for real
-        fill([timeVector, fliplr(timeVector)], ...
-             [meanReal + stdReal; flipud(meanReal - stdReal)], ...
-             'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+%         % Plot mean and shaded std for real
+%         fill([timeVector, fliplr(timeVector)], ...
+%              [meanReal + stdReal; flipud(meanReal - stdReal)], ...
+%              'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
         plot(timeVector, meanReal, 'r');
+      %  plot(timeVector, meanOverground, 'k');
         
         % Labels and legend
         title(varName, 'Interpreter', 'none');
         xlabel('Time (%)');
         ylabel('Value');
        % legend({'Ideal ± STD', 'Ideal Mean', 'Real ± STD', 'Real Mean'}, 'Location', 'best');
-        
+      
         hold off;
+
+        
+
+
+
+
+
     end
     
     % Adjust figure layout
-    sgtitle(['Mean ± STD for ', dataType], 'Interpreter', 'none');
+    sgtitle(['Mean for ', dataType], 'Interpreter', 'none');
+    saveas(gcf, fullfile(save_location, ['18Mean_', dataType, '.png']));
 end
 
 
 
+
+% % Initialize arrays for stacked format (Method 1)
+% Y = [];
+% A = [];
+% 
+% % Initialize cell arrays for separated format (Method 2)
+% idealTrials = {};
+% realTrials = {};
+% 
+% % Loop through each trial and extract individual data
+% for i = 1:15
+%     extractedData = resTable.ExtractedData{i};
+%     
+%     % Extract all variable names under the first entry
+%     if i == 1
+%         dataTypes = unique(extractedData.type);
+%     end
+%     
+%     for d = 1:length(dataTypes)
+%         dataType = dataTypes{d};
+%         
+%         % Get relevant variable names
+%         varNames = extractedData.name(strcmp(extractedData.type, dataType));
+%         
+%         for v = 1:length(varNames)
+%             varName = varNames{v};
+%             if ~contains(varName, '_r')
+%                 continue;
+%             end
+%             
+%             % Find the data for this variable
+%             idx = strcmp(extractedData.name, varName) & strcmp(extractedData.type, dataType);
+%             simData = extractedData.sim(idx);
+%             dataMatrix = cell2mat(simData); % Convert cell to matrix
+%             
+%             % Append to stacked format
+%             Y = [Y; dataMatrix(:)']; % Stack rows
+%             if strcmp(resTable.Type{i}, 'ideal')
+%                 A = [A; ones(size(dataMatrix, 1), 1)];  % Label "1" for ideal
+%                 idealTrials{end+1} = dataMatrix;  % Store separately
+%             elseif strcmp(resTable.Type{i}, 'real')
+%                 A = [A; 2 * ones(size(dataMatrix, 1), 1)]; % Label "2" for real
+%                 realTrials{end+1} = dataMatrix;  % Store separately
+%             end
+%         end
+%     end
+% end
+% 
+% % Convert separated trials to MATLAB struct
+% separatedStruct.ideal = idealTrials;
+% separatedStruct.real = realTrials;
+% 
+% % Save the variables for Python processing
+% save(fullfile(save_location, 'spm1d_data.mat'), 'Y', 'A', 'separatedStruct');
+% 
+% 
+% 
+% 
+
+% Compute the muscle activation differences (ideal - real)
+muscles = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', 'rect_fem_r', ...
+           'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
+%muscles = {'gastroc_r', 'soleus_r', 'tib_ant_r'};
+%muscles = {'hamstrings_r', 'bifemsh_r',  'gastroc_r', 'rect_fem_r', ...
+%           'vasti_r'};
+activationDiffs = struct();
+peaks = struct();
+% Time vector (assuming all activations have the same length)
+timeVector = 1:100;
+
+for m = 1:length(muscles)
+    muscle = muscles{m};
+    
+    % Extract mean activations for ideal and real conditions
+    meanIdeal = meanDataStruct.a.(muscle).ideal;
+    meanReal = meanDataStruct.a.(muscle).real;
+
+    maxIdeal = max(meanIdeal)
+    maxReal = max(meanReal)
+    diff = maxReal / maxIdeal; %(maxReal - maxIdeal) / maxIdeal
+    
+    % Compute activation difference
+    activationDiffs.(muscle) = meanIdeal - meanReal;
+    peaks.(muscle) = diff;
+end
+
+% Plot all muscle activation differences on one plot
+figure;
+hold on;
+
+colors = lines(length(muscles)); % Generate distinct colors
+
+for m = 1:length(muscles)
+    muscle = muscles{m};
+    plot(timeVector, activationDiffs.(muscle), 'Color', colors(m, :), 'LineWidth', 2);
+end
+
+xlabel('Time (%)');
+ylabel('Activation Difference (Ideal - Real)');
+title('Muscle Activation Differences');
+legend(muscles, 'Location', 'best');
+grid on;
+hold off;
+
+% Save the plot
+%saveas(gcf, fullfile(save_location, 'MuscleActivationDifferences.png'));
+
+
+% Compute the muscle activation differences (ideal - real)
+muscles_ankle = {'gastroc_r', 'soleus_r', 'tib_ant_r'};
+muscles_knee = {'hamstrings_r', 'bifemsh_r', 'rect_fem_r', 'vasti_r'};
+       
+activationDiffs = struct();
+
+% Load belt speed data
+
+
+speeds_sim = [];
+
+for i = 1:5
+    filePattern = fullfile(folderReal, ['*', num2str(i), '.mat']);
+    fileList = dir(filePattern);
+    resultFile = fullfile(folderReal, fileList(1).name);
+    res = load(resultFile);
+    result = res.result;
+    bR = result.problem.idx.belt_right;
+    compSpeedR = result.X(bR);
+    speeds_sim = cat(3, speeds_sim, compSpeedR);
+end
+meanSpeed_sim = mean(speeds_sim, 3);
+
+% Define stance phase as ending at last index where simulated speed > 1.8
+stance_end_idx = find(meanSpeed_sim > 1.805, 1, 'last');
+stance_phase = 1:stance_end_idx;
+meanSpeed_sim = meanSpeed_sim-1.8;
+
+% Time vector (assuming all activations have the same length)
+timeVector = 1:100;
+
+% Compute activation differences for stance phase
+activation_ankle = zeros(length(muscles_ankle), length(stance_phase));
+activation_knee = zeros(length(muscles_knee), length(stance_phase));
+
+for m = 1:length(muscles_ankle)
+    muscle = muscles_ankle{m};
+    meanIdeal = meanDataStruct.a.(muscle).ideal;
+    meanReal = meanDataStruct.a.(muscle).real;
+    activationDiff = meanIdeal - meanReal;
+    activation_ankle(m, :) = activationDiff(stance_phase);
+end
+
+for m = 1:length(muscles_knee)
+    muscle = muscles_knee{m};
+    meanIdeal = meanDataStruct.a.(muscle).ideal;
+    meanReal = meanDataStruct.a.(muscle).real;
+    activationDiff = meanIdeal - meanReal;
+    activation_knee(m, :) = activationDiff(stance_phase);
+end
+
+% Create subplots
+fig = figure;
+fig.Position(4) = 200;
+
+% Subplot for ankle flexors/extensors
+%subplot(2,2,1);
+
+plot(stance_phase, meanSpeed_sim(stance_phase), 'Color', "#0072BD", 'LineWidth', 1);
+%for m = 1:length(muscles_ankle)
+hold on 
+plot(stance_phase, activation_ankle(1, :), 'Color', "#0072BD", 'LineWidth', 1);
+hold on 
+plot(stance_phase, activation_ankle(2, :), 'Color', "#4DBEEE", 'LineWidth', 1);
+
+plot(stance_phase, activation_ankle(3, :), 'Color', "#EDB120", 'LineWidth', 1);
+
+
+xlabel('% of stride');
+ylabel('activation difference');
+%title('Ankle Flexors/Extensors');
+legend([{'gastrocnemius', 'soleus' 'tibialis anterior'}], 'Location', 'southeast');
+set(gca, 'box', 'off');
+fontsize(gcf,scale=1.2);
+%saveas(fig, 'muscleActDiff.png')
+%grid on;
+
+% % Subplot for knee flexors/extensors
+% subplot(1,2,2);
+% hold on;
+% plot(stance_phase, meanSpeed_sim(stance_phase), 'Color', "#D95319", 'LineWidth', 1);
+% for m = 1:length(muscles_knee)
+%     plot(stance_phase, activation_knee(m, :), 'LineWidth', 1.5);
+% end
+% xlabel('% of Stance Phase');
+% ylabel('Activation Difference & Belt Speed');
+% title('Knee Flexors/Extensors');
+% legend(['Measured Belt Speed', 'Simulated Belt Speed', muscles_knee], 'Location', 'southeast');
+% set(gca, 'box', 'off');
+% grid on;
+
+% Save the plot
+
+% Compute the mean muscle activation for all muscles (real and ideal)
+% Compute the mean muscle activation for all muscles (real and ideal)
+muscles = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', 'rect_fem_r', ...
+           'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
+       
+mean_activations_real = struct();
+mean_activations_ideal = struct();
+activation_differences = struct();
+
+for m = 1:length(muscles)
+    muscle = muscles{m};
+    mean_ideal = mean(meanDataStruct.a.(muscle).ideal);
+    mean_real = mean(meanDataStruct.a.(muscle).real);
+    
+    mean_activations_ideal.(muscle) = mean_ideal;
+    mean_activations_real.(muscle) = mean_real;
+    activation_differences.(muscle) = mean_ideal - mean_real;
+end
+
+% Print mean muscle activations for real and ideal conditions
+disp('Mean Muscle Activations for Ideal Condition:');
+disp(mean_activations_ideal);
+disp('Mean Muscle Activations for Real Condition:');
+disp(mean_activations_real);
+disp('Difference in Mean Muscle Activations (Ideal - Real):');
+disp(activation_differences);

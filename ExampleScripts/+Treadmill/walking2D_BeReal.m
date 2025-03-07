@@ -75,16 +75,44 @@ problem.makeinitialguess(initialGuess);
 %% Add objective terms to the problem
 Wtracking = 1;
 trackingData.resampleData(nNodes);
+
+
+var = trackingData.variables;
+
+grfx = load("data\Walking\grfx.mat");
+grfy = load("data\Walking\grfy.mat");
+
+rightX = (grfx.speed_18 / 100 / 9.81).';
+rightY = (grfy.speed_18 / 100 / 9.81).';
+
+first_half = rightX(1:50);   % First 50 samples
+second_half = rightX(51:100); % Last 50 samples
+leftX = [second_half; first_half];
+% 
+first_half = rightY(1:50);   % First 50 samples
+second_half = rightY(51:100); % Last 50 samples
+leftY = [second_half; first_half];
+
+var(4, 3) = {rightX}; % Ensure same column names);
+var{5, 3} = {rightY}; % Ensure same column names);
+
+var(11, 3) = {leftX}; % Ensure same column names);
+var{12, 3} = {leftY}; % Ensure same column names);
+% Append the new rows to the existing table
+trackingData = trackingData.setVariables(var);
+
+
+
 GRFSignals   = {'GRF_x_r', 'GRF_y_r', 'GRF_x_l', 'GRF_y_l'};
 AngleSignals = {'hip_flexion_r', 'knee_angle_r', 'ankle_angle_r', 'hip_flexion_l', 'knee_angle_l', 'ankle_angle_l'};
 nGRF   = length(GRFSignals);
 nAngle = length(AngleSignals);
 nAll   = nGRF + nAngle;
 problem.addObjective(@trackGRF   , Wtracking*nGRF/nAll  , trackingData.extractData('GRF', GRFSignals));
-problem.addObjective(@trackAngles, Wtracking*nAngle/nAll, trackingData.extractData('angle', AngleSignals));
-problem.addObjective(@impactTerm, 0.01);
+problem.addObjective(@trackAngles, 0.5*Wtracking*nAngle/nAll, trackingData.extractData('angle', AngleSignals));
+%problem.addObjective(@impactTerm, 0.01);
 
-Weffort = 20;
+Weffort = 6;
 weightsType = 'equal'; 
 exponent = 3; 
 problem.addObjective(@effortTermMusclesAct, Weffort, weightsType, exponent); 

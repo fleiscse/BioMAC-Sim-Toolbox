@@ -22,7 +22,7 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'Winter_fast.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
  %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/18/overground6';%'results/overground'%'results/TCSG/ideal'; 
@@ -36,10 +36,10 @@ dateString = datestr(date, 'yyyy_mm_dd');
 % Get absolute file names
 resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing1'];
 resultFileStanding = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\overground\2025_02_26_sript2D_overground_walking_overground_12_1';
-resultFileStanding = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\overground6\2025_02_28_sript2D_overground_walking_overground_12_1';
+resultFileStanding = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\overground6\2025_02_28_sript2D_overground_walking_overground_12_5';
 
 
-resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_1'];
+resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_test'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -113,7 +113,7 @@ solver.setOptionField('tol', 0.0005);
 
 % Solve the optimization problem and save the result. 
 resultWalking = solver.solve(problemWalking);
-resultWalking.save(resultFileWalking); 
+%resultWalking.save(resultFileWalking); 
 
 % If you want to create plots, take a look at one of the other examples.
 resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);

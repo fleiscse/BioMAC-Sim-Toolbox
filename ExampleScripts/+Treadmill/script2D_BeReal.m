@@ -25,7 +25,7 @@ dataFolder     = 'data/Walking';                % Relative from the path of the 
 dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/TGCS/overground'%'results/TCSG/ideal'; 
-resultFolder2   = 'results/TCSG/real_from_overgroundHighEffort1000'; 	        % Relative from the path of the repository
+resultFolder2   = 'results/TCSG/18/real_from_overground6'; 	        % Relative from the path of the repository
 % Relative from the path of the repository
 
 %% Initalization
@@ -37,9 +37,12 @@ dateString = datestr(date, 'yyyy_mm_dd');
 
 
 %resultFileStanding = "C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\Treadmill\2025_02_17_script2D_standing";
+%for 1.2:
 resultFileWalkingIdealTreadmill  = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\overgroundHighEffort\2025_02_27_sript2D_overground_walking_overground_12_1';
-
-resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_1'];
+%for 1.8:
+resultFileWalkingIdealTreadmill = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\overground6\2025_02_28_sript2D_overground_walking_overground_12_5';
+%resultFileWalkingIdealTreadmill = "C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\ideal_from_overground6\2025_02_28_script2D12_1";
+resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_5'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 
@@ -118,14 +121,14 @@ model = Gait2d_osim_tread(modelFile, 1.9, 100);
 %model = Gait2d_osim_tread(modelFile);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
-    model.setTreadmillSpeed(1.2);
+    model.setTreadmillSpeed(1.8);
 else
-    speed.left = 1.15;
-    speed.right = 1.25;
+    speed.left = 1.8;
+    speed.right = 1.8;
     model.setTreadmillSpeed(speed);
 end
 
-targetSpeedTreadmill = 1.2;
+targetSpeedTreadmill = 1.8;
 
 isSymmetric = 0;
 %initialGuess = resultFileStanding;
