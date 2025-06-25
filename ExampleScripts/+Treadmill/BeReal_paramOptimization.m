@@ -56,7 +56,7 @@ problemWalking = Treadmill.params_BeReal(speed, grfx, grfy, targetSpeedTreadmill
 % Create solver and change solver settings
 solver = IPOPT();
 solver.setOptionField('max_iter', 5000);
-solver.setOptionField('tol', 0.0005);
+solver.setOptionField('tol', 0.005);
 
 % Solve the optimization problem and save the result. 
 resultWalking = solver.solve(problemWalking);

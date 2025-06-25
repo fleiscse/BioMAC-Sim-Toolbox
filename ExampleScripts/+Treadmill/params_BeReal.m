@@ -50,11 +50,10 @@ problem = CollocationParams(nNodes, Euler, logfile, plotLog);
 problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, add extra node
 
 %problem.addOptimVar('grf_delay', 2, 9);
-problem.addOptimVar('Kfy', -0.3, 0, -0.18124);
-problem.addOptimVar('Kgrf', 0.00001, 0.1, 1.198787283721859e-05);
-problem.addOptimVar('Kp', 0, 5, 3.3260351576);
-problem.addOptimVar('Kd', -0.5, 0, -0.012040885);
-problem.addOptimVar('Kpd', 0, 0.5, 0.2429888);
+problem.addOptimVar('Kfy', -0.005, -0.00004, -0.0002);
+problem.addOptimVar('Kfx', 0.0001, 0.01, 0.0006695288);
+problem.addOptimVar('Kp', 0.1, 1, 0.1558);
+problem.addOptimVar('Kd', -0.1, 0, -0.005853);
 %problem.addOptimVar('c', 0.01, 0.01);
 
 
@@ -77,8 +76,8 @@ problem.addObjective(@trackBeltSpeed, W_track, speed);
 
 %% Add constraints to the problem
 
-lb = repmat(-0.001,1,nNodes);
-up = repmat(0.001,1,nNodes);
+lb = repmat(-0.1001,1,nNodes);
+up = repmat(0.1001,1,nNodes);
 %lb(80:100) = -0.5;
 %up(80:100) = 0.5;
 problem.addConstraint(@treadmillSpeedConstraintsParams,lb,up, grfx, grfy, delay)

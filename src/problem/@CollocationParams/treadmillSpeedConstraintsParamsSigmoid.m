@@ -132,9 +132,8 @@ elseif strcmp(option,'jacobian')
         output(ic(1), idxKfy) = sigmoid_left*((fy2 - fy1)/c);
 
         %derivative wrt Kp, Kd and Kpd
-        output(ic(1), idxKp) = sigmoid_left*Kpsd*(1.2 - v_curr);
-        output(ic(1), idxKd) = sigmoid_left*Kpd* ((-v_curr+ v_prev)/c);
-        output(ic(1), idxKpd)  = sigmoid_left*Kp*(1.2 - v_curr) + sigmoid_left*Kd * ((-v_curr+ v_prev)/c);
+        output(ic(1), idxKp) = sigmoid_left*(1.2 - v_curr);
+        output(ic(1), idxKd) = sigmoid_left* ((-v_curr+ v_prev)/c);
 
         %derivative wrt c
        % output(ic(1), idxC) = -1 * Kgrf *((fx2 - fx1)/c^2) - Kgrf*Kfy*((fy2 - fy1)/c^2) - Kpd*Kd * ((-v_curr+ v_prev)/c^2);
