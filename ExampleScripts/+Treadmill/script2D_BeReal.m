@@ -23,7 +23,7 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'Winter_normal_var2.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/TCSG_improve/18';%'results/TCSG/ideal'; 
 resultFolder2   = 'results/TCSG_improve/18/real_from_overground6'; 	        % Relative from the path of the repository
