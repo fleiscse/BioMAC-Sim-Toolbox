@@ -25,17 +25,17 @@ dataFolder     = 'data/Walking';                % Relative from the path of the 
 dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
  %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
-resultFolder   = 'results/TCSG/18/overground6'; 
-resultFolder1   = 'results/initial_guesses';% Relative from the path of the repository
+resultFolder   = 'results/TCSG_improve/18'; 
 
 %% Initalization
 % Get date
 dateString = datestr(date, 'yyyy_mm_dd');
 
 % Get absolute file names
-resultFileStanding = [path2repo,filesep,resultFolder1,filesep,'standing1'];
+resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
 
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground_12_1'];
+
+resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -45,29 +45,29 @@ end
 
 %% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
 % Create an instane of the OpenSim 2D model class using the default settings
-% model = Gait2d_osim(modelFile, 1.9, 100);
+ model = Gait2d_osim(modelFile, 1.9, 100);
 % model = Gait2dc(modelFile);
 
 % Call IntroductionExamples.standing2D() to specify the optimizaton problem
 % We use the same function as in IntroductionExamples, since we are solving
 % the same problem.
-% problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
+ problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
 % 
 % % Create an object of class solver. We use most of the time the IPOPT here.
-% solver = IPOPT();
+ solver = IPOPT();
 % 
 % % Change settings of the solver
-% solver.setOptionField('tol', 0.0000001);
-% solver.setOptionField('constr_viol_tol', 0.000001);
+ solver.setOptionField('tol', 0.0000001);
+ solver.setOptionField('constr_viol_tol', 0.000001);
 % 
 % % Solve the optimization problem
-% resultStanding = solver.solve(problemStanding);
+ resultStanding = solver.solve(problemStanding);
 % 
 % % Save the result
-% resultStanding.save(resultFileStanding);
+ resultStanding.save(resultFileStanding);
 % 
 % % To plot the result we have to extract the states x from the result vector X
-% x = resultStanding.X(resultStanding.problem.idx.states);
+ x = resultStanding.X(resultStanding.problem.idx.states);
 % 
 % % Now, we can plot the stick figure visualizing the result
 % figure();

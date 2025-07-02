@@ -44,7 +44,7 @@ end
 
 %% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
 % Create an instane of our 2D model class using the default settings
-model = Gait2dc(modelFile, 1.9, 100);
+model = Gait2d_osim(modelFile, 1.9, 100);
 % => We use a mex function for some functionality of the model. This was
 % automatically initialized with the correct settings for the current
 % model. (see command line output)

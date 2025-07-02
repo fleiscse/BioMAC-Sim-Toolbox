@@ -15,6 +15,7 @@ close all
 clc
 
 %% Settings
+from_standing = 0;
 % Get path of this script
 filePath = fileparts(mfilename('fullpath'));
 % Path to your repository
@@ -22,28 +23,30 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'Winter_normal_var2.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
-resultFolder   = 'results/TGCS/overground'%'results/TCSG/ideal'; 
-resultFolder2   = 'results/TCSG/18/real_from_overground6'; 	        % Relative from the path of the repository
+resultFolder   = 'results/TCSG_improve/18';%'results/TCSG/ideal'; 
+resultFolder2   = 'results/TCSG_improve/18/real_from_overground6'; 	        % Relative from the path of the repository
 % Relative from the path of the repository
 
 %% Initalization
 % Get date
+
 dateString = datestr(date, 'yyyy_mm_dd');
 
 % Get absolute file names
-%resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing1'];
+resultFileStanding = [resultFolder,filesep,'standing'];
 
 
-%resultFileStanding = "C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\Treadmill\2025_02_17_script2D_standing";
+
 %for 1.2:
-resultFileWalkingIdealTreadmill  = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\overgroundHighEffort\2025_02_27_sript2D_overground_walking_overground_12_1';
 %for 1.8:
-resultFileWalkingIdealTreadmill = '\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\overground6\2025_02_28_sript2D_overground_walking_overground_12_5';
-%resultFileWalkingIdealTreadmill = "C:\Users\Sophie Fleischmann\Documents\ResearchProjects\BeReal\ISB\BioMAC-Sim-Toolbox\results\TCSG\18\ideal_from_overground6\2025_02_28_script2D12_1";
-resultFileWalking  = [path2repo,filesep,resultFolder2,filesep,dateString,'_', mfilename,'12_5'];
-dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
+resultFileWalkingIdealTreadmill = '/home/rzlin/ys64ofuj/BeReal/BioMAC-Sim-Toolbox/results/TCSG_improve/18/2025_06_26_script2D_walking_overground';
+resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
+
+
+resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walkingBeReal'];
+dataFile           = [pwd,filesep,dataFolder,  filesep,dataFile];
 
 
 % Create resultfolder if it does not exist
@@ -53,35 +56,38 @@ end
 
 %% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
 % Create an instane of the OpenSim 2D model class using the default settings
-%model = Gait2d_osim(modelFile);
-%model.bodymass=90;
+if from_standing
+
+    model = Gait2d_osim(modelFile, 1.9, 100);
+%model.bodymass=100;
 % model = Gait2dc(modelFile);
 
 % Call IntroductionExamples.standing2D() to specify the optimizaton problem
 % We use the same function as in IntroductionExamples, since we are solving
 % the same problem.
-%problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
+    problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
 
 % Create an object of class solver. We use most of the time the IPOPT here.
-%solver = IPOPT();
+    solver = IPOPT();
 
 % Change settings of the solver
-%solver.setOptionField('tol', 0.0000001);
+    solver.setOptionField('tol', 0.0000001);
 %solver.setOptionField('constr_viol_tol', 0.000001);
 
 % Solve the optimization problem
-%resultStanding = solver.solve(problemStanding);
+    resultStanding = solver.solve(problemStanding);
 
 % Save the result
-%resultStanding.save(resultFileStanding);
+    resultStanding.save(resultFileStanding);
 
 % To plot the result we have to extract the states x from the result vector X
-%x = resultStanding.X(resultStanding.problem.idx.states);
+    x = resultStanding.X(resultStanding.problem.idx.states);
 
 % Now, we can plot the stick figure visualizing the result
-%figure();
-%resultStanding.problem.model.showStick(x);
-%title('2D Standing');
+    figure();
+    resultStanding.problem.model.showStick(x);
+    title('2D Standing');
+end
 
 % If the model is standing on the toes, the optimization ends in a local optimum and not the global one. Rerun this
 % section and you should find a different solution, due to a different random
@@ -121,18 +127,22 @@ model = Gait2d_osim_tread(modelFile, 1.9, 100);
 %model = Gait2d_osim_tread(modelFile);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
-    model.setTreadmillSpeed(1.8);
+    model.setTreadmillSpeed(1.2);
 else
     speed.left = 1.8;
     speed.right = 1.8;
     model.setTreadmillSpeed(speed);
 end
 
-targetSpeedTreadmill = 1.8;
+targetSpeedTreadmill = 1.2;
 
 isSymmetric = 0;
-%initialGuess = resultFileStanding;
-initialGuess = resultFileWalkingIdealTreadmill;
+if from_standing
+    initialGuess = resultFileStanding;
+else
+    initialGuess = resultFileWalkingIdealTreadmill;
+end
+
 problemWalking = Treadmill.walking2D_BeReal(model, resultFileWalking, trackingData, targetSpeed, targetSpeedTreadmill, isSymmetric, initialGuess);
 
 % Create solver and change solver settings
@@ -154,5 +164,6 @@ style.figureSize = [0 0 16 26];
 % create a pdf summarizing all information and plots. Take a look at it!
 % You might have to press Enter a couple of times in the Command Window
 % for the saving to continue.
-%resultWalking.report(settings, style, resultFileWalking);
+resultWalking.problem.plotBeltSpeed(resultWalking.X)
+resultWalking.report(settings, style, resultFileWalking);
 resultWalking.problem.getMetabolicCost(resultWalking.X);
