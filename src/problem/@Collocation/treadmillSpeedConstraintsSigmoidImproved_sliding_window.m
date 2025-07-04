@@ -77,6 +77,9 @@ if strcmp(option,'confun')
         v_left = v_left_curr + Kfx *((lfx2 - lfx1)/(3*c)) + Kfy*((lfy2 - lfy1)/(3*c)) + Kp*(obj.model.speed_left - v_left_curr) + Kd * ((-v_left_curr+ v_left_prev)/c);
         v_right = v_right_curr + Kfx*((rfx2 - rfx1)/(3*c)) + Kfy*((rfy2 - rfy1)/(3*c)) + Kp*(obj.model.speed_right - v_right_curr) + Kd * ((-v_right_curr+ v_right_prev)/c);
 
+        grf_left= Kfx *((lfx2 - lfx1)/(3*c)) + Kfy*((lfy2 - lfy1)/(3*c));
+        grf_right=Kfx*((rfx2 - rfx1)/(3*c)) + Kfy*((rfy2 - rfy1)/(3*c));
+        
         sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * lfy_current+1000));
         sigmoid_right = 0.0000001 + 1 / (1 + exp(-50 * rfy_current+1000));
         

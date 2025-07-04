@@ -76,30 +76,32 @@ problem.makeinitialguess(initialGuess);
 Wtracking = 1;
 trackingData.resampleData(nNodes);
 
+if model.speed_left==1.8
+    var = trackingData.variables;
+    
+    grfx = load("data/Walking/grfx.mat");
+    grfy = load("data/Walking/grfy.mat");
+    
+    rightX = (grfx.speed_18 / 100 / 9.81).';
+    rightY = (grfy.speed_18 / 100 / 9.81).';
+    
+    first_half = rightX(1:50);   % First 50 samples
+    second_half = rightX(51:100); % Last 50 samples
+    leftX = [second_half; first_half];
+    % 
+    first_half = rightY(1:50);   % First 50 samples
+    second_half = rightY(51:100); % Last 50 samples
+    leftY = [second_half; first_half];
+    
+    var(4, 3) = {rightX}; % Ensure same column names);
+    var{5, 3} = {rightY}; % Ensure same column names);
+    
+    var(11, 3) = {leftX}; % Ensure same column names);
+    var{12, 3} = {leftY}; % Ensure same column names);
+    % Append the new rows to the existing table
+    trackingData = trackingData.setVariables(var);
+end
 
-% var = trackingData.variables;
-% 
-% grfx = load("data/Walking/grfx.mat");
-% grfy = load("data/Walking/grfy.mat");
-% 
-% rightX = (grfx.speed_18 / 100 / 9.81).';
-% rightY = (grfy.speed_18 / 100 / 9.81).';
-% 
-% first_half = rightX(1:50);   % First 50 samples
-% second_half = rightX(51:100); % Last 50 samples
-% leftX = [second_half; first_half];
-% % 
-% first_half = rightY(1:50);   % First 50 samples
-% second_half = rightY(51:100); % Last 50 samples
-% leftY = [second_half; first_half];
-% 
-% var(4, 3) = {rightX}; % Ensure same column names);
-% var{5, 3} = {rightY}; % Ensure same column names);
-% 
-% var(11, 3) = {leftX}; % Ensure same column names);
-% var{12, 3} = {leftY}; % Ensure same column names);
-% % Append the new rows to the existing table
-% trackingData = trackingData.setVariables(var);
 
 
 

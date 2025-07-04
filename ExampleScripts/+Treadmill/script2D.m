@@ -22,7 +22,7 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'Winter_normal_var2.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'Winter_normal_var_18.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
  %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/TCSG_improve/18';%'results/overground'%'results/TCSG/ideal'; 
@@ -37,7 +37,7 @@ dateString = datestr(date, 'yyyy_mm_dd');
 resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
 
 
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground'];
+resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_ideal'];
 dataFile           = [pwd,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -93,7 +93,7 @@ targetSpeed = 0; % m/s
 model = Gait2d_osim(modelFile, 1.9, 100);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
-    model.setTreadmillSpeed(1.2);
+    model.setTreadmillSpeed(1.8);
 else
     speed.left = 1.15;
     speed.right = 1.25;

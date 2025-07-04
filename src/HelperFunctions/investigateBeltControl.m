@@ -1,4 +1,4 @@
-function [diffs, errors, pds, grfs]= investigateBeltControl(resultWalking)
+function [diffs, errors, pds, grfs, Kps, Kds]= investigateBeltControl(resultWalking)
 
 bL = resultWalking.problem.idx.belt_left;
 compSpeed = resultWalking.X(bL);
@@ -13,10 +13,9 @@ model = resultWalking.problem.model;
 m = -model.bodymass * model.gravity(2);
 delay = model.grf_delay;
 Kfy =  model.Kfy;
-Kgrf = model.Kgrf;
+Kfx = model.Kfx;
 Kp = model.Kp;
 Kd = model.Kd;
-Kpd = model.Kpd;
 c = model.c;
 
 
@@ -30,6 +29,8 @@ nNodesDur=101;
 diffs = zeros(1*(nNodesDur-1),1);
 errors = zeros(1*(nNodesDur-1),1);
 pds = zeros(1*(nNodesDur-1),1);
+Kps = zeros(1*(nNodesDur-1),1);
+Kds = zeros(1*(nNodesDur-1),1);
 grfs = zeros(1*(nNodesDur-1),1);
 compspeeds = zeros(1*(nNodesDur-1),1);
 fxchanges = zeros(1*(nNodesDur-1),1);
@@ -76,11 +77,11 @@ fychanges = zeros(1*(nNodesDur-1),1);
 
 
  
-        v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
+        v_right = v_right_curr + Kfx *((rfx2 - rfx1)/c) + Kfy*((rfy2 - rfy1)/c) + Kp*(model.speed_right - v_right_curr) + Kd * ((-v_right_curr+ v_right_prev)/c);
         fx_change=(rfx2 - rfx1)/c;
         fy_change=(rfy2 - rfy1)/c;
-        grf_part = Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c);
-        pd_part = Kpd*Kp*(model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
+        grf_part = Kfx *((rfx2 - rfx1)/c) + Kfy*((rfy2 - rfy1)/c);
+        pd_part = Kp*(model.speed_right - v_right_curr) + Kd * ((-v_right_curr+ v_right_prev)/c);
         e = model.speed_right - v_right_curr;
         
         v_right_next = compSpeedR(mod(iNode, nNodesDur - 1) + 1);
@@ -90,6 +91,8 @@ fychanges = zeros(1*(nNodesDur-1),1);
         diffs(iNode) = diff;	% backward Euler discretization
         pds(iNode) = pd_part;
         grfs(iNode) = grf_part;
+        Kps(iNode) = Kp*(model.speed_right - v_right_curr);
+        Kds(iNode)=Kd * ((-v_right_curr+ v_right_prev)/c);
         errors(iNode) = e;
         fxchanges(iNode) = fx_change;
         fychanges(iNode) = fy_change;
@@ -121,7 +124,7 @@ fychanges = zeros(1*(nNodesDur-1),1);
 
 
  
-        v_right = v_right_curr + Kgrf *((rfx2 - rfx1)/c) + Kgrf*Kfy*((rfy2 - rfy1)/c) + Kpd*Kp*(model.speed_right - v_right_curr) + Kpd*Kd * ((-v_right_curr+ v_right_prev)/c);
+        v_right = v_right_curr + Kfx *((rfx2 - rfx1)/c) + Kfy*((rfy2 - rfy1)/c) + Kp*(model.speed_right - v_right_curr) + Kd * ((-v_right_curr+ v_right_prev)/c);
         allspeeds(iNode)=v_right;
         v_right_prev = v_right_curr;
         v_right_curr = v_right;
