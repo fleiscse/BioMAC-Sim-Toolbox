@@ -30,7 +30,7 @@ resultFolder   = 'results/Treadmill'; 	        % Relative from the path of the r
 % Get date
 dateString = datestr(date, 'yyyy_mm_dd');
 dataFile = [path2repo,filesep,dataFolder,  filesep,dataFile];
-resultFile  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_params_idealTreadmill'];
+resultFile  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_params_idealTreadmill18'];
 
 % Create resultfolder if it does not exist
 if ~exist([path2repo,filesep,resultFolder], 'dir')
@@ -46,24 +46,24 @@ grfx = experimentalData.grfx.speed_18;
 grfy = experimentalData.grfy.speed_18;
 
 
-
+sliding_window=1;
 targetSpeedTreadmill = 1.8;
 delay = 5;
 
 
-problemWalking = Treadmill.params_BeReal18(speed, grfx, grfy, targetSpeedTreadmill, delay, resultFile);
+problemWalking = Treadmill.params_BeReal18(speed, grfx, grfy, targetSpeedTreadmill, delay, resultFile, sliding_window);
 
 % Create solver and change solver settings
 solver = IPOPT();
 solver.setOptionField('max_iter', 5000);
-solver.setOptionField('tol', 0.0005);
+solver.setOptionField('tol', 0.00005);
 
 % Solve the optimization problem and save the result. 
 resultWalking = solver.solve(problemWalking);
-resultWalking.save(resultFileWalking); 
+resultWalking.save(resultFile); 
 %investigateBeltControl(resultWalking)
 % If you want to create plots, take a look at one of the other examples.
-resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
+%resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
 
 
 settings.plotInitialGuess = 1;
@@ -74,3 +74,6 @@ style.figureSize = [0 0 16 26];
 % for the saving to continue.
 %resultWalking.report(settings, style, resultFileWalking);
 %resultWalking.problem.getMetabolicCost(resultWalking.X)
+plot(resultWalking.X(1:100));
+hold on
+plot(speed)

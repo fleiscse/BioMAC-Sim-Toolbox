@@ -50,10 +50,15 @@ problem = CollocationParams(nNodes, Euler, logfile, plotLog);
 problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, add extra node
 
 %problem.addOptimVar('grf_delay', 2, 9);
-problem.addOptimVar('Kfy', -0.005, -0.00004, -0.0002);
-problem.addOptimVar('Kfx', 0.0001, 0.01, 0.0006695288);
-problem.addOptimVar('Kp', 0.1, 1, 0.1558);
-problem.addOptimVar('Kd', -0.1, 0, -0.005853);
+% % problem.addOptimVar('Kfy', -0.005, -0.00004, -0.0002);
+% % problem.addOptimVar('Kfx', 0.0001, 0.01, 0.0006695288);
+% % problem.addOptimVar('Kp', 0.01, 1, 0.1558);
+% % problem.addOptimVar('Kd', -0.1, -0.000001, -0.005853);
+
+problem.addOptimVar('Kfy', -0.005, -0.00004, -0.19466999407124552);
+problem.addOptimVar('Kfx', 0.00001, 0.1, 4.0933641847270306e-06);
+problem.addOptimVar('Kp', 1, 6, 4.628766189441804);
+problem.addOptimVar('Kd', -0.5, 0, -0.05614093069537616);
 %problem.addOptimVar('c', 0.01, 0.01);
 
 
@@ -80,8 +85,8 @@ lb = repmat(-0.1001,1,nNodes);
 up = repmat(0.1001,1,nNodes);
 %lb(80:100) = -0.5;
 %up(80:100) = 0.5;
-problem.addConstraint(@treadmillSpeedConstraintsParams,lb,up, grfx, grfy, delay)
-%problem.derivativetest()
+problem.addConstraint(@treadmillSpeedConstraintsParamsSigmoid,lb,up, grfx, grfy, delay)
+problem.derivativetest()
 fprintf('passed test')
 
 

@@ -60,10 +60,10 @@ solver.setOptionField('tol', 0.005);
 
 % Solve the optimization problem and save the result. 
 resultWalking = solver.solve(problemWalking);
-resultWalking.save(resultFileWalking); 
+resultWalking.save(resultFile); 
 %investigateBeltControl(resultWalking)
 % If you want to create plots, take a look at one of the other examples.
-resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
+%resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
 
 
 settings.plotInitialGuess = 1;
