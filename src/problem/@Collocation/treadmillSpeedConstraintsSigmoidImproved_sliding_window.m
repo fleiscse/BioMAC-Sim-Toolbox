@@ -28,7 +28,7 @@ end
 %% compute demanded output
 nNodesDur = obj.nNodesDur; %number of collocation nodes + 1
 
-nconstraintspernode = 2; %one for left and one for right
+nconstraintspernode = 4; %one for left and one for right
 
 m = -obj.model.bodymass * obj.model.gravity(2);
 delay = obj.model.grf_delay;
@@ -73,6 +73,9 @@ if strcmp(option,'confun')
         v_left_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
         v_right_curr = X(obj.idx.belt_right(iNode));
         v_right_prev = X(obj.idx.belt_right(mod(iNode - 2, nNodesDur-1)+1));
+
+        v_beltchange_r = X(obj.idx.belt_change_r(mod(iNode, nNodesDur - 1) + 1));
+        v_beltchange_l = X(obj.idx.belt_change_l(mod(iNode, nNodesDur - 1) + 1));
         
 
         v_left = v_left_curr + Kfx *((lfx2 - lfx1)/(3*c)) + Kfy*((lfy2 - lfy1)/(3*c)) + Kp*(obj.model.speed_left - v_left_curr) + Kd * ((-v_left_curr+ v_left_prev)/c);
@@ -99,7 +102,12 @@ if strcmp(option,'confun')
         diff =  v_left- v_left_next ;
         obj.model.diff(iNode) = diff;
         diff2 = v_right - v_right_next ;
-        output(ic) = [diff;diff2];	% backward Euler discretization
+
+        diff3 = -v_beltchange_l + grf_left+1.8;
+        diff4 = -v_beltchange_r + grf_right + 1.8;
+
+
+        output(ic) = [diff;diff2;diff3;diff4];	% backward Euler discretization
         
         end
     
@@ -135,6 +143,9 @@ elseif strcmp(option,'jacobian')
 
     idxVLeft = obj.idx.belt_left; % the indices of the left Belt speed in X
     idxVRight = obj.idx.belt_right; % the indices of the right belt speed in X
+
+    idxBeltSpeedChangeR = obj.idx.belt_change_r;
+    idxBeltSpeedChangeL = obj.idx.belt_change_l;
 
     
     
@@ -185,7 +196,7 @@ elseif strcmp(option,'jacobian')
 
         %derivative of left belt wrt left GRFx (at states heel and toe)
         output(ic(1), idxFxToeLinX(delayed_index2)) = sigmoid_left*m*Kfx/(3*c);
-        output(ic(1), idxFxHeelLinX(delayed_index2)) = sigmoid_left*m*Kfx / (3*c);
+        output(ic(1), idxFxHeelLinX(delayed_index2)) = sigmoid_left*m*Kfx /(3*c);
         output(ic(1), idxFxToeLinX(delayed_index)) = -sigmoid_left*m*Kfx/(3*c);
         output(ic(1), idxFxHeelLinX(delayed_index)) = -sigmoid_left*m*Kfx / (3*c);
 
@@ -213,7 +224,7 @@ elseif strcmp(option,'jacobian')
 
         %derivative of right belt wrt right GRFy (at states heel and toe)
         output(ic(2), idxFyToeRinX(delayed_index2)) = Kfy * sigmoid_right*m/(3*c);
-        output(ic(2), idxFyHeelRinX(delayed_index2)) = Kfy *sigmoid_right* m / (3*c);
+        output(ic(2), idxFyHeelRinX(delayed_index2)) = Kfy *sigmoid_right* m/(3*c);
         output(ic(2), idxFyToeRinX(delayed_index)) = -m*sigmoid_right* Kfy/(3*c);
         output(ic(2), idxFyHeelRinX(delayed_index)) = -m*sigmoid_right*Kfy /(3*c);
 
@@ -231,6 +242,35 @@ elseif strcmp(option,'jacobian')
         %derivative wrt to vertical force
         output(ic(2), idxFyHeelRinX(mod(iNode -1, nNodesDur-1) +1)) = sigmoid_right * (1-sigmoid_right) * v_right + (-obj.model.speed_right) * sigmoid_right * (1-sigmoid_right);
         output(ic(2), idxFyToeRinX(mod(iNode -1, nNodesDur-1) +1)) = sigmoid_right * (1-sigmoid_right) * v_right + (-obj.model.speed_right) * sigmoid_right * (1-sigmoid_right);
+    
+        % derivatives of dff 3 and 4
+        output(ic(3), idxBeltSpeedChangeL(next_index)) = -1;
+        output(ic(4), idxBeltSpeedChangeR(next_index)) = -1;
+
+        output(ic(3), idxFxToeLinX(delayed_index2)) = m*Kfx/(3*c);
+        output(ic(3), idxFxHeelLinX(delayed_index2)) = m*Kfx / (3*c);
+        output(ic(3), idxFxToeLinX(delayed_index)) = -m*Kfx/(3*c);
+        output(ic(3), idxFxHeelLinX(delayed_index)) = -m*Kfx / (3*c);
+
+        %derivative of right belt wrt right GRFy (at states heel and toe)
+        output(ic(3), idxFyToeLinX(delayed_index2)) = Kfy *m/(3*c);
+        output(ic(3), idxFyHeelLinX(delayed_index2)) = Kfy * m/(3*c);
+        output(ic(3), idxFyToeLinX(delayed_index)) = -m* Kfy/(3*c);
+        output(ic(3), idxFyHeelLinX(delayed_index)) = -m*Kfy /(3*c);
+
+        output(ic(4), idxFxToeRinX(delayed_index2)) = m*Kfx/(3*c);
+        output(ic(4), idxFxHeelRinX(delayed_index2)) = m*Kfx / (3*c);
+        output(ic(4), idxFxToeRinX(delayed_index)) = -m*Kfx/(3*c);
+        output(ic(4), idxFxHeelRinX(delayed_index)) = -m*Kfx / (3*c);
+
+        %derivative of right belt wrt right GRFy (at states heel and toe)
+        output(ic(4), idxFyToeRinX(delayed_index2)) = Kfy * m/(3*c);
+        output(ic(4), idxFyHeelRinX(delayed_index2)) = Kfy * m/(3*c);
+        output(ic(4), idxFyToeRinX(delayed_index)) = -m* Kfy/(3*c);
+        output(ic(4), idxFyHeelRinX(delayed_index)) = -m*Kfy /(3*c);
+
+
+
     end
 else
     error('Unknown option.');

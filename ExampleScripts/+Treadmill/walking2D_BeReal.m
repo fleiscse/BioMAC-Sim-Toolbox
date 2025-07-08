@@ -53,6 +53,8 @@ problem.addOptimVar('states', xmin, xmax);
 problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node,  add extra node
 problem.addOptimVar('belt_right', repmat(0.9*targetSpeedTreadmill,1,nNodes), repmat(1.05*targetSpeedTreadmill,1,nNodes)); %one speed at every node, add extra node
 
+problem.addOptimVar('belt_change_r', repmat(targetSpeedTreadmill - 1.05*targetSpeedTreadmill,1,nNodes), repmat(targetSpeedTreadmill - 0.9*targetSpeedTreadmill, 1, nNodes)); %one speed at every node,  add extra node
+problem.addOptimVar('belt_change_l', repmat(targetSpeedTreadmill - 1.05*targetSpeedTreadmill,1,nNodes), repmat(targetSpeedTreadmill - 0.9*targetSpeedTreadmill, 1, nNodes));%speed at every node, add extra node
 
 % Add controls to the problem using the default bounds (initial values will be specified later)
 problem.addOptimVar('controls',repmat(model.controls.xmin,1,nNodes+1), repmat(model.controls.xmax,1,nNodes+1));
@@ -75,7 +77,7 @@ problem.makeinitialguess(initialGuess);
 %% Add objective terms to the problem
 Wtracking = 1;
 trackingData.resampleData(nNodes);
-
+% 
 if model.speed_left==1.8
     var = trackingData.variables;
 
@@ -129,8 +131,10 @@ problem.addConstraint(@dynamicConstraintsBeReal,repmat(model.constraints.fmin,1,
 problem.addConstraint(@periodicityConstraint,zeros(model.nStates+model.nControls,1),zeros(model.nStates+model.nControls,1),isSymmetric)
 
 %problem.addConstraint(@treadSpeedPeriodicityConstraint,zeros(3,1),zeros(3,1),isSymmetric)
-problem.addConstraint(@treadmillSpeedConstraintsSigmoidImproved_sliding_window,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
+problem.addConstraint(@treadmillSpeedConstraintsSigmoidImproved_sliding_window,repmat([-0.00;-0.00;0;0],1,nNodes),repmat([0.00;0.00;0;0],1,nNodes))
 %problem.derivativetest()
+%%problem.addConstraint(@treadmillSpeedConstraints_add_var,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
+
 fprintf('passed test')
 
 
