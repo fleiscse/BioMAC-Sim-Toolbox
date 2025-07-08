@@ -48,7 +48,8 @@ if strcmp(option,'confun')
         delayed_index2 = mod(iNode - delay+1, nNodesDur-1) +1;
         delayedIx2 = X(obj.idx.states(:,delayed_index2 )); %mroe recent then delayed Idx
         delayedIx = X(obj.idx.states(:,delayed_index));
-        ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode; %indices of constraints of iNode in c
+
+        ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode;
         
         grfDelayedIx = obj.model.getGRF(delayedIx);
         grfDelayedIx2 = obj.model.getGRF(delayedIx2);
@@ -83,7 +84,7 @@ if strcmp(option,'confun')
         sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * lfy_current+1000));
         sigmoid_right = 0.0000001 + 1 / (1 + exp(-50 * rfy_current+1000));
         
-        v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
+        v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1)); 
         v_right_next = X(obj.idx.belt_right(mod(iNode, nNodesDur - 1) + 1));
 
         %apply sigmoid: belt speed should be 1.2 if there is no vertical
@@ -91,8 +92,12 @@ if strcmp(option,'confun')
         v_left = sigmoid_left*v_left + (1-sigmoid_left) * obj.model.speed_left;
         v_right = sigmoid_right*v_right + (1-sigmoid_right) * obj.model.speed_right;
 
-        
+        obj.model.grf_part_right(iNode) = grf_right;
+        obj.model.grf_part_left(iNode) = grf_left;
+        obj.model.pd_part(iNode) = Kp*(obj.model.speed_right - v_right_curr) + Kd * ((-v_right_curr+ v_right_prev)/c);
+
         diff =  v_left- v_left_next ;
+        obj.model.diff(iNode) = diff;
         diff2 = v_right - v_right_next ;
         output(ic) = [diff;diff2];	% backward Euler discretization
         
@@ -144,6 +149,9 @@ elseif strcmp(option,'jacobian')
         
        
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode;
+       
+
+
         delayed_index = mod(iNode - delay-2, nNodesDur-1) +1; %starts at 95 if we have 100 nodes or 96 if we have 101 nodes, gets NEGATIVE derivative
         delayed_index2 = mod(iNode - delay+1, nNodesDur-1) +1; %starts at 96 (for 100 nodes), is gets POSITIVE derivative
         next_index =  mod(iNode, nNodesDur - 1) + 1;

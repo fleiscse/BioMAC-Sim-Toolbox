@@ -56,8 +56,8 @@ if strcmp(option,'confun')
         xd =(x2-x1)/h;
         u2 = X(obj.idx.controls(:,iNode+1));
         if iNode == nNodesDur-1
-            vBeltLeft = X(obj.idx.belt_left(1));
-            vBeltRight = X(obj.idx.belt_right(1));
+            vBeltLeft = X(obj.idx.belt_left(1)); %obj.model.speed_left + obj.model.grf_part_left(1);%
+            vBeltRight =X(obj.idx.belt_right(1));
         else
 
             vBeltLeft = X(obj.idx.belt_left(iNode+1)); %or at this node?? or Inode+1??
@@ -106,7 +106,7 @@ elseif strcmp(option,'jacobian')
             idxBeltRight = obj.idx.belt_right(1);
         else
 
-            vBeltLeft = X(obj.idx.belt_left(iNode+1)); %this only works if the
+            vBeltLeft =  X(obj.idx.belt_left(iNode+1)); %this only works if the
         %number of speeds is also nNodes+1
             vBeltRight = X(obj.idx.belt_right(iNode+1));
             idxBeltLeft = obj.idx.belt_left(iNode+1);

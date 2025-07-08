@@ -16,6 +16,14 @@
 %======================================================================
 classdef Gait2d_osim_tread < Gait2d_osim
 
+    properties
+        grf_part_left = zeros(1*(101-1),1);
+        grf_part_right = zeros(1*(101-1),1);
+        diff = zeros(1*(101-1),1);
+        pd_part = zeros(1*(101-1),1);
+    end
+
+
     properties (SetAccess = protected)
         %> Struct: Information (name, file, modified, sha256) on opensim model
        grf_delay = 5%5
@@ -28,6 +36,7 @@ classdef Gait2d_osim_tread < Gait2d_osim
        Kp =  0.608387439669403*0.9
    %3.804707484807214%2.2421%2.25%0.10131%4.25
        Kd =  -0.009957138800960*0.9
+       
 %   -0.014515311156096%-0.02523%-0.03164%-0.3034889%
        %Kpd =    0.121612336668859*0.5;%0.263247%0.2275%0.023701%0.2275
 

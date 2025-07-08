@@ -23,7 +23,7 @@
 function problem = walking2D_BeReal(model, resultfile, trackingData, targetSpeed, targetSpeedTreadmill, isSymmetric, initialGuess)
 
 %% Fixed settings
-% We can choose the number of collocation nodes.
+% We can coose the number of collocation nodes.
 nNodes = 100;   
 % Most of the time we use backard euler for discretization which is encoded with 'BE'.
 Euler = 'BE';
@@ -78,13 +78,13 @@ trackingData.resampleData(nNodes);
 
 if model.speed_left==1.8
     var = trackingData.variables;
-    
+
     grfx = load("data/Walking/grfx.mat");
     grfy = load("data/Walking/grfy.mat");
-    
+
     rightX = (grfx.speed_18 / 100 / 9.81).';
     rightY = (grfy.speed_18 / 100 / 9.81).';
-    
+
     first_half = rightX(1:50);   % First 50 samples
     second_half = rightX(51:100); % Last 50 samples
     leftX = [second_half; first_half];
@@ -92,10 +92,10 @@ if model.speed_left==1.8
     first_half = rightY(1:50);   % First 50 samples
     second_half = rightY(51:100); % Last 50 samples
     leftY = [second_half; first_half];
-    
+
     var(4, 3) = {rightX}; % Ensure same column names);
     var{5, 3} = {rightY}; % Ensure same column names);
-    
+
     var(11, 3) = {leftX}; % Ensure same column names);
     var{12, 3} = {leftY}; % Ensure same column names);
     % Append the new rows to the existing table
