@@ -62,7 +62,7 @@ if strcmp(option,'confun')
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
        
         
-        v_left = v_curr + Kfx *((fx2 - fx1)/(3*c)) + Kfy*((fy2 - fy1)/(3*c)) + Kp*(1.8 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
+        v_left = v_curr + Kfx *((fx2 - fx1)*(3*c)) + Kfy*((fy2 - fy1)*(3*c)) + Kp*(1.8 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
 
         sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
         
@@ -127,10 +127,10 @@ elseif strcmp(option,'jacobian')
 
 
         %derivative wrt Kgrf
-        output(ic(1), idxKfx) = sigmoid_left*((fx2 - fx1)/(3*c));
+        output(ic(1), idxKfx) = sigmoid_left*((fx2 - fx1)*(3*c));
         
         %derivative wrt Kfx
-        output(ic(1), idxKfy) = sigmoid_left*((fy2 - fy1)/(3*c));
+        output(ic(1), idxKfy) = sigmoid_left*((fy2 - fy1)*(3*c));
 
         %derivative wrt Kp, Kd and Kpd
         output(ic(1), idxKp) = sigmoid_left*(1.8- v_curr);
