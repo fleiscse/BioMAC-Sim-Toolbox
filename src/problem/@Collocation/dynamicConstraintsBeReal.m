@@ -56,12 +56,12 @@ if strcmp(option,'confun')
         xd =(x2-x1)/h;
         u2 = X(obj.idx.controls(:,iNode+1));
         if iNode == nNodesDur-1
-            vBeltLeft = X(obj.idx.belt_change_l(1));%X(obj.idx.belt_left(1));
-            vBeltRight =X(obj.idx.belt_change_r(1));%;X(obj.idx.belt_right(1));
+            vBeltLeft = X(obj.idx.belt_left(1));
+            vBeltRight =X(obj.idx.belt_right(1));
         else
 
-            vBeltLeft = X(obj.idx.belt_change_l(iNode+1));%X(obj.idx.belt_left(iNode+1));% %or at this node?? or Inode+1??
-            vBeltRight = X(obj.idx.belt_change_r(iNode+1));%X(obj.idx.belt_right(iNode+1));%
+            vBeltLeft = X(obj.idx.belt_left(iNode+1));% %or at this node?? or Inode+1??
+            vBeltRight = X(obj.idx.belt_right(iNode+1));%
         end
 
         if strcmp(obj.Euler,'BE')
@@ -100,19 +100,19 @@ elseif strcmp(option,'jacobian')
         u2 = X(obj.idx.controls(:,iNode+1));
     
         if iNode == nNodesDur-1
-            vBeltLeft =  X(obj.idx.belt_change_l(1));%;X(obj.idx.belt_left(1));%%
-            vBeltRight = X(obj.idx.belt_change_r(1));%X(obj.idx.belt_right(1));%
-            idxBeltRight = obj.idx.belt_change_r(1);
-            idxBeltLeft = obj.idx.belt_change_l(1);
+            vBeltLeft = X(obj.idx.belt_left(1));%%
+            vBeltRight = X(obj.idx.belt_right(1));%
+            idxBeltRight = obj.idx.belt_right(1);
+            idxBeltLeft = obj.idx.belt_left(1);
         else
 
 
 
-            vBeltLeft =  X(obj.idx.belt_change_l(iNode+1));%X(obj.idx.belt_left(iNode+1)); %1.8 + X(obj.idx.belt_change_l(iNode+1));%%this only works if the
+            vBeltLeft =  X(obj.idx.belt_left(iNode+1)); %1.8 + X(obj.idx.belt_change_l(iNode+1));%%this only works if the
         %number of speeds is also nNodes+1
-            vBeltRight = X(obj.idx.belt_change_r(iNode+1));%X(obj.idx.belt_right(iNode+1));
-            idxBeltLeft = obj.idx.belt_change_l(iNode+1);
-            idxBeltRight = obj.idx.belt_change_r(iNode+1);
+            vBeltRight = X(obj.idx.belt_right(iNode+1));
+            idxBeltLeft = obj.idx.belt_left(iNode+1);
+            idxBeltRight = obj.idx.belt_right(iNode+1);
         end
 
         
