@@ -22,7 +22,7 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'Winter_normal.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'treadmill_slow.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
  %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/TCSG_improve/18'; 
@@ -35,7 +35,7 @@ dateString = datestr(date, 'yyyy_mm_dd');
 resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
 
 
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground'];
+resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground_exp'];
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -86,7 +86,7 @@ trackingData = TrackingData.loadStruct(dataFile);
 
 
 % The global speed
-targetSpeed = 1.8; % m/s
+targetSpeed = 1.2; % m/s
 
 % Create and initialize an instance of the OpenSim 2D model class.
 model = Gait2d_osim(modelFile, 1.9, 100);
@@ -99,7 +99,7 @@ else
     model.setTreadmillSpeed(speed);
 end
 
-isSymmetric = 0;
+isSymmetric = 1;
 initialGuess = resultFileStanding;
 problemWalking = Treadmill.walking2D_overground(model, resultFileWalking, trackingData, targetSpeed, isSymmetric, initialGuess);
 

@@ -104,7 +104,7 @@ if model.speed_left==1.8
     trackingData = trackingData.setVariables(var);
 end
 
-
+% 
 
 
 GRFSignals   = {'GRF_x_r', 'GRF_y_r', 'GRF_x_l', 'GRF_y_l'};
@@ -131,7 +131,7 @@ problem.addConstraint(@dynamicConstraintsBeReal,repmat(model.constraints.fmin,1,
 problem.addConstraint(@periodicityConstraint,zeros(model.nStates+model.nControls,1),zeros(model.nStates+model.nControls,1),isSymmetric)
 
 %problem.addConstraint(@treadSpeedPeriodicityConstraint,zeros(3,1),zeros(3,1),isSymmetric)
-problem.addConstraint(@treadmillSpeedConstraintsSigmoidImproved,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
+problem.addConstraint(@treadmillSpeedConstraintsSigmoidImproved_sliding_window,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
 %problem.derivativetest()
 %%problem.addConstraint(@treadmillSpeedConstraints_add_var,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
 

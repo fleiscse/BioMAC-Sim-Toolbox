@@ -1,3 +1,4 @@
+%extract
 % ======================================================================
 %> @file TrackingData.m
 %> @brief Matlab class to define tracking data
