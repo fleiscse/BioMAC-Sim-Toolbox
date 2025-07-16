@@ -23,7 +23,7 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'Winter_normal_var_18.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'Winter_normal'%;_var_18.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
 resultFolder   = 'results/TCSG_improve/18';%'results/TCSG/ideal'; 
 resultFolder2   = 'results/TCSG_improve/18/real_from_overground6'; 	        % Relative from the path of the repository
@@ -41,11 +41,11 @@ resultFileStanding = [resultFolder,filesep,'standing'];
 
 %for 1.2:
 %for 1.8:
-resultFileWalkingIdealTreadmill = '/home/rzlin/ys64ofuj/BeReal/BioMAC-Sim-Toolbox/results/TCSG_improve/18/2025_06_26_script2D_walking_overground';
+resultFileWalkingIdealTreadmill = '/home/rzlin/ys64ofuj/BeReal/BioMAC-Sim-Toolbox/results/overground/18/overground5';
 resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
 
 
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walkingBeReal'];
+resultFileWalking  = '/home/rzlin/ys64ofuj/BeReal/BioMAC-Sim-Toolbox/results/TCSG_improve/18/sliding_window_normalVar/realistic5';
 dataFile           = [pwd,filesep,dataFolder,  filesep,dataFile];
 
 

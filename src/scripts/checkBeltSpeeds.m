@@ -1,7 +1,7 @@
 fy_speeds = load("data\Walking\grfy.mat");
 speeds = load("data\Walking\experimentalSpeeds.mat");
 
-right12 = (speeds.speed_12).'% -1.2;
+right12 = (speeds.speed_12).';% -1.2;
 right18 = (speeds.speed_18).';
 xq = linspace(1, 65, 100);
 
