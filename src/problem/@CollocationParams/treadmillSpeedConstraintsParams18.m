@@ -33,10 +33,10 @@ nconstraintspernode = 1; %one for left and one for right
 
 %delay = X(obj.idx.grf_delay);
 Kfy =  X(obj.idx.Kfy);
-Kgrf = X(obj.idx.Kgrf);
+Kfx = X(obj.idx.Kfx);
 Kp = X(obj.idx.Kp);
 Kd = X(obj.idx.Kd);
-Kpd = X(obj.idx.Kpd);
+
 c = 0.01;
 
 if strcmp(option,'confun')
@@ -62,7 +62,7 @@ if strcmp(option,'confun')
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
        
         
-        v_left = v_curr + Kgrf *((fx2 - fx1)/c) + Kgrf*Kfy*((fy2 - fy1)/c) + Kpd*Kp*(1.8 - v_curr) + Kpd*Kd * ((-v_curr+ v_prev)/c);
+        v_left = v_curr + Kfx *((fx2 - fx1)/c) + Kfy*((fy2 - fy1)/c) + Kp*(1.8 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
 
         %sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
         
@@ -85,11 +85,10 @@ elseif strcmp(option,'jacobian')
     idxVLeft = obj.idx.belt_left; % the indices of the left Belt speed in X
   %  idxDelay = obj.idx.grf_delay;
     idxKfy =  obj.idx.Kfy;
-    idxKgrf = obj.idx.Kgrf;
+    idxKfx = obj.idx.Kfx;
     idxKp = obj.idx.Kp;
     idxKd = obj.idx.Kd;
-    idxKpd = obj.idx.Kpd;
-   % idxC = obj.idx.c;
+  
     
     
     for iNode = 1:(nNodesDur-1)
@@ -119,20 +118,19 @@ elseif strcmp(option,'jacobian')
         
         output(ic(1), idxVLeft(next_index)) = -1;
 
-        output(ic(1), idxVLeft(iNode)) = 1 -Kpd*Kp - Kpd*Kd/c; % der from pd Part wrt v(n)
-        output(ic(1), idxVLeft(mod(iNode - 2, nNodesDur-1)+1)) =  Kpd*Kd/c; %derivative wrt v(n-1)
+        output(ic(1), idxVLeft(iNode)) = 1 -Kp - Kd/c; % der from pd Part wrt v(n)
+        output(ic(1), idxVLeft(mod(iNode - 2, nNodesDur-1)+1)) =  Kd/c; %derivative wrt v(n-1)
 
 
         %derivative wrt Kgrf
-        output(ic(1), idxKgrf) = ((fx2 - fx1)/c) + Kfy*((fy2 - fy1)/c);
+        output(ic(1), idxKfx) = ((fx2 - fx1)/c) ;
         
         %derivative wrt Kfx
-        output(ic(1), idxKfy) = Kgrf*((fy2 - fy1)/c);
+        output(ic(1), idxKfy) = ((fy2 - fy1)/c);
 
         %derivative wrt Kp, Kd and Kpd
-        output(ic(1), idxKp) = Kpd*(1.8 - v_curr);
-        output(ic(1), idxKd) = Kpd* ((-v_curr+ v_prev)/c);
-        output(ic(1), idxKpd)  = Kp*(1.8 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
+        output(ic(1), idxKp) = (1.8 - v_curr);
+        output(ic(1), idxKd) =  ((-v_curr+ v_prev)/c);
 
         %derivative wrt c
        % output(ic(1), idxC) = -1 * Kgrf *((fx2 - fx1)/c^2) - Kgrf*Kfy*((fy2 - fy1)/c^2) - Kpd*Kd * ((-v_curr+ v_prev)/c^2);

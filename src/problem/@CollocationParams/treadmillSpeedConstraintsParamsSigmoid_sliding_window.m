@@ -17,7 +17,7 @@
 %>                      the model and current treadmill speeds
 %> @param sym           Boolean if movement is symmetric (half period is optimized) or not
 %======================================================================
-function output = treadmillSpeedConstraintsParamsSigmoid18(obj,option,X,grfx, grfy, delay)
+function output = treadmillSpeedConstraintsParamsSigmoid(obj,option,X,grfx, grfy, delay)
 
 %% check input parameter
 if ~isfield(obj.idx,'belt_left') % check whether controls are stored in X
@@ -45,8 +45,8 @@ if strcmp(option,'confun')
     % dynamic equations must be zero
         for iNode=1:(nNodesDur-1)
 
-        delayed_index = mod(iNode - delay-1, nNodesDur-1) +1;
-        delayed_index2 = mod(iNode - delay, nNodesDur-1) +1;
+        delayed_index = mod(iNode - delay-2, nNodesDur-1) +1;
+        delayed_index2 = mod(iNode - delay+1, nNodesDur-1) +1;
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode; %indices of constraints of iNode in c
         
        
@@ -56,22 +56,21 @@ if strcmp(option,'confun')
         fx1 = grfx(delayed_index); %TODO: check if this is the same as when I add the 2 states
         fy1 = grfy(delayed_index);
 
-        %fy_current= grfy(mod(iNode-1, nNodesDur-1) +1)/100/9.81;
+        fy_current= grfy(mod(iNode-1, nNodesDur-1) +1);
              
         v_curr = X(obj.idx.belt_left(iNode));
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
        
         
-        v_left = v_curr + Kfx *((fx2 - fx1)/c) + Kfy*((fy2 - fy1)/c) + Kp*(1.8 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
+        v_left = v_curr + Kfx *((fx2 - fx1)*(3*c)) + Kfy*((fy2 - fy1)*(3*c)) + Kp*(1.2 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
 
-        fy_current= grfy(mod(iNode-1, nNodesDur-1) +1);
         sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * fy_current+1000));
         
         v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
 
         %apply sigmoid: belt speed should be 1.2 if there is no vertical
         %force, else the computed speed
-        v_left = sigmoid_left*v_left + (1-sigmoid_left) * 1.8;
+        v_left = sigmoid_left*v_left + (1-sigmoid_left) * 1.2;
         
         diff =  v_left- v_left_next ;
         output(ic) = diff;	% backward Euler discretization
@@ -89,7 +88,6 @@ elseif strcmp(option,'jacobian')
     idxKfx = obj.idx.Kfx;
     idxKp = obj.idx.Kp;
     idxKd = obj.idx.Kd;
-
    % idxC = obj.idx.c;
     
     
@@ -101,8 +99,8 @@ elseif strcmp(option,'jacobian')
         
        
         ic = (1:nconstraintspernode) +  (iNode-1)*nconstraintspernode;
-        delayed_index = mod(iNode - delay-1, nNodesDur-1) +1; %starts at 95 if we have 100 nodes or 96 if we have 101 nodes, gets NEGATIVE derivative
-        delayed_index2 = mod(iNode - delay, nNodesDur-1) +1; %starts at 96 (for 100 nodes), is gets POSITIVE derivative
+        delayed_index = mod(iNode - delay-2, nNodesDur-1) +1; %starts at 95 if we have 100 nodes or 96 if we have 101 nodes, gets NEGATIVE derivative
+        delayed_index2 = mod(iNode - delay+1, nNodesDur-1) +1; %starts at 96 (for 100 nodes), is gets POSITIVE derivative
         next_index =  mod(iNode, nNodesDur - 1) + 1;
 
         fx2 = grfx(delayed_index2); %TODO: check if this is the same as when I add the 2 states
@@ -128,13 +126,13 @@ elseif strcmp(option,'jacobian')
 
 
         %derivative wrt Kgrf
-        output(ic(1), idxKfx) = sigmoid_left*((fx2 - fx1)/c);
+        output(ic(1), idxKfx) = sigmoid_left*((fx2 - fx1)*(3*c));
         
         %derivative wrt Kfx
-        output(ic(1), idxKfy) = sigmoid_left*((fy2 - fy1)/c);
+        output(ic(1), idxKfy) = sigmoid_left*((fy2 - fy1)*(3*c));
 
         %derivative wrt Kp, Kd and Kpd
-        output(ic(1), idxKp) = sigmoid_left*(1.8- v_curr);
+        output(ic(1), idxKp) = sigmoid_left*(1.2 - v_curr);
         output(ic(1), idxKd) = sigmoid_left* ((-v_curr+ v_prev)/c);
 
         %derivative wrt c

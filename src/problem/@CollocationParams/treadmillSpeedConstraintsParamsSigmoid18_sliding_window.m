@@ -36,8 +36,9 @@ Kfy =  X(obj.idx.Kfy);
 Kfx = X(obj.idx.Kfx);
 Kp = X(obj.idx.Kp);
 Kd = X(obj.idx.Kd);
+c = 0.01;%X(obj.idx.c);
 
-c = 0.012;
+%c = 0.012;
 
 if strcmp(option,'confun')
     output = zeros(nconstraintspernode*(nNodesDur-1),1);
@@ -61,10 +62,10 @@ if strcmp(option,'confun')
         v_curr = X(obj.idx.belt_left(iNode));
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
        
-        
+
         v_left = v_curr + Kfx *((fx2 - fx1)*(3*c)) + Kfy*((fy2 - fy1)*(3*c)) + Kp*(1.8 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
 
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
+        sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * fy_current+1000));
         
         v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
 
@@ -115,7 +116,7 @@ elseif strcmp(option,'jacobian')
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
       
         fy_current= grfy(mod(iNode-1, nNodesDur-1) +1);
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
+        sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * fy_current+1000));
 
 
         %derivative wrt to next speed

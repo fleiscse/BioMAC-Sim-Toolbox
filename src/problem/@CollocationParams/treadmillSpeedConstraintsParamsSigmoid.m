@@ -36,8 +36,9 @@ Kfy =  X(obj.idx.Kfy);
 Kfx = X(obj.idx.Kfx);
 Kp = X(obj.idx.Kp);
 Kd = X(obj.idx.Kd);
+c = X(obj.idx.c);
 
-c = 0.01;
+%c = 0.01;
 
 if strcmp(option,'confun')
     output = zeros(nconstraintspernode*(nNodesDur-1),1);
@@ -64,7 +65,7 @@ if strcmp(option,'confun')
         
         v_left = v_curr + Kfx *((fx2 - fx1)/c) + Kfy*((fy2 - fy1)/c) + Kp*(1.2 - v_curr) + Kd * ((-v_curr+ v_prev)/c);
 
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
+        sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * fy_current+1000));
         
         v_left_next = X(obj.idx.belt_left(mod(iNode, nNodesDur - 1) + 1));
 
@@ -76,8 +77,7 @@ if strcmp(option,'confun')
         output(ic) = diff;	% backward Euler discretization
         
         end
-    
-
+ 
 elseif strcmp(option,'jacobian')
     output = spalloc(nconstraintspernode*(nNodesDur-1),length(X),obj.Jnnz);
 
@@ -88,7 +88,7 @@ elseif strcmp(option,'jacobian')
     idxKfx = obj.idx.Kfx;
     idxKp = obj.idx.Kp;
     idxKd = obj.idx.Kd;
-   % idxC = obj.idx.c;
+    idxC = obj.idx.c;
     
     
     for iNode = 1:(nNodesDur-1)
@@ -114,7 +114,7 @@ elseif strcmp(option,'jacobian')
         v_prev = X(obj.idx.belt_left(mod(iNode - 2, nNodesDur-1)+1)); %only works if n_constraints (and not n+1) --> if I need n+1 points: use an if statement
       
         fy_current= grfy(mod(iNode-1, nNodesDur-1) +1);
-        sigmoid_left = 0.0005 + 1 / (1 + exp(-50 * fy_current+10));
+        sigmoid_left = 0.0000001 + 1 / (1 + exp(-50 * fy_current+1000));
 
 
         %derivative wrt to next speed
@@ -136,7 +136,7 @@ elseif strcmp(option,'jacobian')
         output(ic(1), idxKd) = sigmoid_left* ((-v_curr+ v_prev)/c);
 
         %derivative wrt c
-       % output(ic(1), idxC) = -1 * Kgrf *((fx2 - fx1)/c^2) - Kgrf*Kfy*((fy2 - fy1)/c^2) - Kpd*Kd * ((-v_curr+ v_prev)/c^2);
+        output(ic(1), idxC) = -1 * Kfx*((fx2 - fx1)/c^2) - Kfy*((fy2 - fy1)/c^2) - Kd * ((-v_curr+ v_prev)/c^2);
 
 
      
