@@ -20,7 +20,7 @@
 %> @param   initialGuess   String: Filename with path specifying the initial guess 
 %> @retval  problem        Collocation: Optimization problem for 2D running
 % ======================================================================
-function problem = params_BeReal(speed, grfx, grfy, targetSpeedTreadmill, delay, resultfile)
+function problem = params_BeReal(speed, grfx, grfy, targetSpeedTreadmill, delay, resultfile, sliding_window)
 
 %% Fixed settings
 % We can choose the number of collocation nodes.
@@ -55,11 +55,20 @@ problem.addOptimVar('belt_left', repmat(0.9*targetSpeedTreadmill,1,nNodes), repm
 % % problem.addOptimVar('Kp', 0.01, 1, 0.1558);
 % % problem.addOptimVar('Kd', -0.1, -0.000001, -0.005853);
 
-problem.addOptimVar('Kfy', -0.005, -0.00004, -0.19466999407124552);
-problem.addOptimVar('Kfx', 0.00001, 0.1, 4.0933641847270306e-06);
-problem.addOptimVar('Kp', 1, 6, 4.628766189441804);
-problem.addOptimVar('Kd', -0.5, 0, -0.05614093069537616);
-%problem.addOptimVar('c', 0.01, 0.01);
+problem.addOptimVar('Kfy', -0.005, -0.00000004, -7.955602349433669e-07);
+problem.addOptimVar('Kfx', 0.000001, 0.1, 4.085410935310792e-06);
+problem.addOptimVar('Kp', 0.5, 6, 0.6293945300035183);
+problem.addOptimVar('Kd', -0.5, 0,  -0.007660608736373246);
+problem.addOptimVar('c', 0.001, 0.1,  0.01);
+
+if sliding_window==1
+    problem.addOptimVar('Kfy', -1, -0.000000004, -5.026670112161265e-05);
+    problem.addOptimVar('Kfx', 0.00000005, 1, 2.5133170343689026e-04);
+    problem.addOptimVar('Kp', 0.0000005, 6, 0.3926190752206077);
+    problem.addOptimVar('Kd', -3, 0, -0.006844910020105455);
+  %  problem.addOptimVar('Kd', -0, 0, 0);
+
+end
 
 
 % Add speed in x direction of the movement. We choose here targetspeed for
@@ -81,12 +90,17 @@ problem.addObjective(@trackBeltSpeed, W_track, speed);
 
 %% Add constraints to the problem
 
-lb = repmat(-0.1001,1,nNodes);
-up = repmat(0.1001,1,nNodes);
+lb = repmat(-0.001,1,nNodes);
+up = repmat(0.001,1,nNodes);
 %lb(80:100) = -0.5;
 %up(80:100) = 0.5;
-problem.addConstraint(@treadmillSpeedConstraintsParamsSigmoid,lb,up, grfx, grfy, delay)
-problem.derivativetest()
+if sliding_window==1
+    problem.addConstraint(@treadmillSpeedConstraintsParamsSigmoid_sliding_window,lb,up, grfx, grfy, delay)
+else
+
+    problem.addConstraint(@treadmillSpeedConstraintsParamsSigmoid,lb,up, grfx, grfy, delay)
+end
+    %problem.derivativetest()
 fprintf('passed test')
 
 

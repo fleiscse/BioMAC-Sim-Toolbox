@@ -56,13 +56,15 @@ problem.addOptimVar('Kp', 0.5, 6, 0.6293945300035183);
 problem.addOptimVar('Kd', -0.5, 0,  -0.007660608736373246);
 
 if sliding_window==1
-    problem.addOptimVar('Kfy', -0.05, -0.00000004, -5.026670112161265e-05);
+    problem.addOptimVar('Kfy', -0.1, -0.00000004, -5.026670112161265e-05);
     problem.addOptimVar('Kfx', 0.0005, 0.1, 2.5133170343689026e-04);
     problem.addOptimVar('Kp', 0.005, 6, 0.3926190752206077);
     problem.addOptimVar('Kd', -0.5, 0, -0.006844910020105455);
+  %  problem.addOptimVar('Kd', -0, 0, 0);
+
 
 end
-%problem.addOptimVar('c', 0.01, 0.01);
+%problem.addOptimVar('c', 0.005, 0.05, 0.01);
 
 
 % Add speed in x direction of the movement. We choose here targetspeed for

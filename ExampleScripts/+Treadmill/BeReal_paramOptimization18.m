@@ -46,7 +46,7 @@ grfx = experimentalData.grfx.speed_18;
 grfy = experimentalData.grfy.speed_18;
 
 
-sliding_window=1;
+sliding_window=0;
 targetSpeedTreadmill = 1.8;
 delay = 5;
 

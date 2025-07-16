@@ -47,11 +47,12 @@ grfy = experimentalData.grfy.speed_12;
 
 
 
+sliding_window=0;
 targetSpeedTreadmill = 1.2;
 delay = 5;
 
 
-problemWalking = Treadmill.params_BeReal(speed, grfx, grfy, targetSpeedTreadmill, delay, resultFile);
+problemWalking = Treadmill.params_BeReal(speed, grfx, grfy, targetSpeedTreadmill, delay, resultFile, sliding_window);
 
 % Create solver and change solver settings
 solver = IPOPT();
@@ -74,3 +75,6 @@ style.figureSize = [0 0 16 26];
 % for the saving to continue.
 %resultWalking.report(settings, style, resultFileWalking);
 %resultWalking.problem.getMetabolicCost(resultWalking.X)
+plot(resultWalking.X(1:100));
+hold on
+plot(speed)
