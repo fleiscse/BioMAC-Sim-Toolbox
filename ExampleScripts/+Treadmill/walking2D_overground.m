@@ -71,13 +71,14 @@ problem.makeinitialguess(initialGuess);
 Wtracking = 1;
 trackingData.resampleData(nNodes);
 
+
 var = trackingData.variables;
 
 grfx = load("data/Walking/grfx.mat");
 grfy = load("data/Walking/grfy.mat");
 
-rightX = (grfx.speed_18 / 100 / 9.81).';
-rightY = (grfy.speed_18 / 100 / 9.81).';
+rightX = (grfx.speed_2 / 100 / 9.81).';
+rightY = (grfy.speed_2 / 100 / 9.81).';
 
 first_half = rightX(1:50);   % First 50 samples
 second_half = rightX(51:100); % Last 50 samples

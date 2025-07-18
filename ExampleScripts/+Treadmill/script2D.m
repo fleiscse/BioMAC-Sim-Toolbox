@@ -16,6 +16,7 @@ clc
 
 %% Settings
 % Get path of this script
+from_standing=0;
 filePath = fileparts(mfilename('fullpath'));
 % Path to your repository
 path2repo = [filePath filesep '..' filesep '..' filesep];
@@ -32,12 +33,15 @@ resultFolder2   = 'results/TCSG_improve/18/ideal_from_overground'; %'results/TCS
 %% Initalization
 % Get date
 dateString = datestr(date, 'yyyy_mm_dd');
-
+trackingData = TrackingData.loadStruct(dataFile);
 % Get absolute file names
-resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
+%resultFileWalkingIdealTreadmill = '/home/rzlin/ys64ofuj/BeReal/BioMAC-Sim-Toolbox/results/overground/12/overground1';
+for i = 1:5
+    resultFileWalkingIdealTreadmill = sprintf('results/TCSG_improve_from_scratch/18/overground%d', i);
 
 
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_ideal'];
+
+    resultFileWalking = sprintf('results/TCSG_improve_from_scratch/2/ideal%d', i);
 dataFile           = [pwd,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -45,45 +49,8 @@ if ~exist([path2repo,filesep,resultFolder], 'dir')
     mkdir([path2repo,filesep,resultFolder]);
 end
 
-%% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
-% Create an instane of the OpenSim 2D model class using the default settings
-% model = Gait2d_osim(modelFile, 1.9, 100);
- %model = Gait2dc(modelFile);
 
-% Call IntroductionExamples.standing2D() to specify the optimizaton problem
-% We use the same function as in IntroductionExamples, since we are solving
-% the same problem.
-% problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
-% 
-% % Create an object of class solver. We use most of the time the IPOPT here.
-% solver = IPOPT();
-% 
-% % Change settings of the solver
- %solver.setOptionField('tol', 0.0000001);
-% solver.setOptionField('constr_viol_tol', 0.000001);
-% 
-% % Solve the optimization problem
-% resultStanding = solver.solve(problemStanding);
-% 
-% % Save the result
-% resultStanding.save(resultFileStanding);
-% 
-% % To plot the result we have to extract the states x from the result vector X
-% x = resultStanding.X(resultStanding.problem.idx.states);
-% 
-% % Now, we can plot the stick figure visualizing the result
-% figure();
-% resultStanding.problem.model.showStick(x);
-% title('2D Standing');
 
-% If the model is standing on the toes, the optimization ends in a local optimum and not the global one. Rerun this
-% section and you should find a different solution, due to a different random
-% initial guess. You can run it a couple of times until you find a good
-% solution, standing on flat feet.
-
-%% Simulate walking on a single belt or split-belt treadmill
-% Load tracking data struct and create a TrackingData object
-trackingData = TrackingData.loadStruct(dataFile);
 % The global speed is going to be zeros, as the movement now comes from the treadmill
 
 
@@ -93,7 +60,7 @@ targetSpeed = 0; % m/s
 model = Gait2d_osim(modelFile, 1.9, 100);
 singlespeed = 1; %Change to 0 for split-belt treadmill simulation
 if singlespeed
-    model.setTreadmillSpeed(1.8);
+    model.setTreadmillSpeed(2.0);
 else
     speed.left = 1.15;
     speed.right = 1.25;
@@ -101,8 +68,12 @@ else
 end
 
 isSymmetric = 0;
-initialGuess = resultFileStanding;
-problemWalking = Treadmill.walking2D(model, resultFileStanding, trackingData, targetSpeed, isSymmetric, initialGuess);
+if from_standing
+    initialGuess = resultFileStanding;
+else
+    initialGuess = resultFileWalkingIdealTreadmill;
+end
+problemWalking = Treadmill.walking2D(model, resultFileWalking, trackingData, targetSpeed, isSymmetric, initialGuess);
 
 % Create solver and change solver settings
 solver = IPOPT();
@@ -116,10 +87,12 @@ resultWalking.save(resultFileWalking);
 % If you want to create plots, take a look at one of the other examples.
 resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
 
-settings.plotInitialGuess = 1;
-style.figureSize = [0 0 16 26];
+%settings.plotInitialGuess = 1;
+%style.figureSize = [0 0 16 26];
 % When also giving a filename as input, the function will automatically
 % create a pdf summarizing all information and plots. Take a look at it!
 % You might have to press Enter a couple of times in the Command Window
 % for the saving to continue.
-resultWalking.report(settings, style, resultFileWalking);
+%resultWalking.report(settings, style, resultFileWalking);
+
+end

@@ -22,20 +22,23 @@ path2repo = [filePath filesep '..' filesep '..' filesep];
 
 % Fixed settings
 dataFolder     = 'data/Walking';                % Relative from the path of the repository
-dataFile       = 'treadmill_slow.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
+dataFile       = 'Winter_normal_var_18.mat';%.mat';           % Running data from Fukuchi 2017 subject S001 with 3.5 m/s
 modelFile      = 'gait2d.osim';                 % Name of the OpenSim model with lumbar joint locked
  %modelFile      = 'gait10dof18musc.osim';      % Name of the base model from OpenSim 
-resultFolder   = 'results/TCSG_improve/18'; 
+resultFolder   = 'results/TCSG_improve_from_scratch/18'; 
 
 %% Initalization
 % Get date
 dateString = datestr(date, 'yyyy_mm_dd');
+trackingData = TrackingData.loadStruct(dataFile);
 
 % Get absolute file names
-resultFileStanding = [path2repo,filesep,resultFolder,filesep,'standing'];
+for i = 1:5
+    resultFileStanding = sprintf('results/standing/standing%d', i);
 
 
-resultFileWalking  = [path2repo,filesep,resultFolder,filesep,dateString,'_', mfilename,'_walking_overground_exp'];
+
+resultFileWalking = sprintf('results/TCSG_improve_from_scratch/2/overground%d', i);
 dataFile           = [path2repo,filesep,dataFolder,  filesep,dataFile];
 
 % Create resultfolder if it does not exist
@@ -43,50 +46,12 @@ if ~exist([path2repo,filesep,resultFolder], 'dir')
     mkdir([path2repo,filesep,resultFolder]);
 end
 
-%% Standing: Simulate standing with minimal effort without tracking data for one point in time (static)
-% Create an instane of the OpenSim 2D model class using the default settings
- model = Gait2d_osim(modelFile, 1.9, 100);
-% model = Gait2dc(modelFile);
 
-% Call IntroductionExamples.standing2D() to specify the optimizaton problem
-% We use the same function as in IntroductionExamples, since we are solving
-% the same problem.
- problemStanding = IntroductionExamples.standing2D(model, resultFileStanding);
-% 
-% % Create an object of class solver. We use most of the time the IPOPT here.
- solver = IPOPT();
-% 
-% % Change settings of the solver
- solver.setOptionField('tol', 0.0000001);
- solver.setOptionField('constr_viol_tol', 0.000001);
-% 
-% % Solve the optimization problem
- resultStanding = solver.solve(problemStanding);
-% 
-% % Save the result
- resultStanding.save(resultFileStanding);
-% 
-% % To plot the result we have to extract the states x from the result vector X
- x = resultStanding.X(resultStanding.problem.idx.states);
-% 
-% % Now, we can plot the stick figure visualizing the result
-% figure();
-% resultStanding.problem.model.showStick(x);
-% title('2D Standing');
-
-% If the model is standing on the toes, the optimization ends in a local optimum and not the global one. Rerun this
-% section and you should find a different solution, due to a different random
-% initial guess. You can run it a couple of times until you find a good
-% solution, standing on flat feet.
-
-%% Simulate walking on a single belt or split-belt treadmill
-% Load tracking data struct and create a TrackingData object
-trackingData = TrackingData.loadStruct(dataFile);
 
 
 
 % The global speed
-targetSpeed = 1.2; % m/s
+targetSpeed = 2.0; % m/s
 
 % Create and initialize an instance of the OpenSim 2D model class.
 model = Gait2d_osim(modelFile, 1.9, 100);
@@ -113,12 +78,13 @@ resultWalking = solver.solve(problemWalking);
 resultWalking.save(resultFileWalking); 
 
 % If you want to create plots, take a look at one of the other examples.
-resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
+%resultWalking.problem.writeMovie(resultWalking.X, resultWalking.filename);
 
-settings.plotInitialGuess = 1;
-style.figureSize = [0 0 16 26];
+%settings.plotInitialGuess = 1;
+%style.figureSize = [0 0 16 26];
 % When also giving a filename as input, the function will automatically
 % create a pdf summarizing all information and plots. Take a look at it!
 % You might have to press Enter a couple of times in the Command Window
 % for the saving to continue.
 %resultWalking.report(settings, style, resultFileWalking);
+end

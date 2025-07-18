@@ -78,31 +78,31 @@ problem.makeinitialguess(initialGuess);
 Wtracking = 1;
 trackingData.resampleData(nNodes);
 % 
-if model.speed_left==1.8
-    var = trackingData.variables;
+%if model.speed_left==1.8
+var = trackingData.variables;
 
-    grfx = load("data/Walking/grfx.mat");
-    grfy = load("data/Walking/grfy.mat");
+grfx = load("data/Walking/grfx.mat");
+grfy = load("data/Walking/grfy.mat");
 
-    rightX = (grfx.speed_18 / 100 / 9.81).';
-    rightY = (grfy.speed_18 / 100 / 9.81).';
+rightX = (grfx.speed_1 / 100 / 9.81).';
+rightY = (grfy.speed_1 / 100 / 9.81).';
 
-    first_half = rightX(1:50);   % First 50 samples
-    second_half = rightX(51:100); % Last 50 samples
-    leftX = [second_half; first_half];
-    % 
-    first_half = rightY(1:50);   % First 50 samples
-    second_half = rightY(51:100); % Last 50 samples
-    leftY = [second_half; first_half];
+first_half = rightX(1:50);   % First 50 samples
+second_half = rightX(51:100); % Last 50 samples
+leftX = [second_half; first_half];
+% 
+first_half = rightY(1:50);   % First 50 samples
+second_half = rightY(51:100); % Last 50 samples
+leftY = [second_half; first_half];
 
-    var(4, 3) = {rightX}; % Ensure same column names);
-    var{5, 3} = {rightY}; % Ensure same column names);
+var(4, 3) = {rightX}; % Ensure same column names);
+var{5, 3} = {rightY}; % Ensure same column names);
 
-    var(11, 3) = {leftX}; % Ensure same column names);
-    var{12, 3} = {leftY}; % Ensure same column names);
-    % Append the new rows to the existing table
-    trackingData = trackingData.setVariables(var);
-end
+var(11, 3) = {leftX}; % Ensure same column names);
+var{12, 3} = {leftY}; % Ensure same column names);
+% Append the new rows to the existing table
+trackingData = trackingData.setVariables(var);
+%end
 
 % 
 
@@ -131,7 +131,7 @@ problem.addConstraint(@dynamicConstraintsBeReal,repmat(model.constraints.fmin,1,
 problem.addConstraint(@periodicityConstraint,zeros(model.nStates+model.nControls,1),zeros(model.nStates+model.nControls,1),isSymmetric)
 
 %problem.addConstraint(@treadSpeedPeriodicityConstraint,zeros(3,1),zeros(3,1),isSymmetric)
-problem.addConstraint(@treadmillSpeedConstraintsSigmoidImproved_sliding_window,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
+problem.addConstraint(@treadmillSpeedConstraintsSigmoidImproved,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
 %problem.derivativetest()
 %%problem.addConstraint(@treadmillSpeedConstraints_add_var,repmat([-0.00;-0.00],1,nNodes),repmat([0.00;0.00],1,nNodes))
 

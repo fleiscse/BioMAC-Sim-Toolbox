@@ -37,16 +37,15 @@ end
 if strcmp(name, 'left')
     %start at right leg, end at left leg
     ind_grf_start = find(strcmp(obj.model.GRFNAMES, 'rightFy'));
-    ind_grf_end = find(strcmp(obj.model.GRFNAMES, 'leftFy'));
+    ind_grf_end = find(strcmp(obj.model.GRFNAMES, 'rightFy'));
     %Now find state index of heel marker
     if isa(obj.model, 'Gait3d')
         ind_state_start = find(strcmp(obj.model.states.name, 'CPM_r') & strcmp(obj.model.states.type,'xc'));
         ind_state_end = find(strcmp(obj.model.states.name, 'CPM_l') & strcmp(obj.model.states.type,'xc'));
-    elseif isa(obj.model, 'Gait2dc')
+    else
         ind_state_start = find(strcmp(obj.model.states.name, 'heel_r') & strcmp(obj.model.states.type,'xc'));
         ind_state_end = find(strcmp(obj.model.states.name, 'heel_l') & strcmp(obj.model.states.type,'xc'));
-    else 
-        error('wrong model type')
+   
     end
 else
     %start at left leg, end at right leg
@@ -55,11 +54,10 @@ else
     if isa(obj.model, 'Gait3d')
         ind_state_start = find(strcmp(obj.model.states.name, 'CPM_l') & strcmp(obj.model.states.type,'xc'));
         ind_state_end = find(strcmp(obj.model.states.name, 'CPM_r') & strcmp(obj.model.states.type,'xc'));
-    elseif isa(obj.model, 'Gait2dc')
+    else
         ind_state_start = find(strcmp(obj.model.states.name, 'heel_l') & strcmp(obj.model.states.type,'xc'));
         ind_state_end = find(strcmp(obj.model.states.name, 'heel_r') & strcmp(obj.model.states.type,'xc'));
-    else 
-        error('wrong model type')
+    
     end
 end
 
